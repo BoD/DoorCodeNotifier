@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="primary">#4e6</color>
+    <color name="primary_dark">#3d5</color>
+    <color name="primary_light">#39fc60</color>
+
+    <color name="fab">@color/primary</color>
+    <color name="fab_pressed">@color/primary_light</color>
+</resources>

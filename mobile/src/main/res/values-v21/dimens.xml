@@ -1,0 +1,3 @@
+<resources>
+    <dimen name="addressinfo_list_item_margin">4dp</dimen>
+</resources>

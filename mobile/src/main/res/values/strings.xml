@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">DigiBoD</string>
+
+    <string name="addressinfo_list_code">Code #%1$d</string>
+
+    <string name="action_add">Add</string>
+    <string name="addressinfo_list_chooseAddress">Which address?</string>
+
+
+</resources>
