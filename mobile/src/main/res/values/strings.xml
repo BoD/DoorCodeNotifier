@@ -7,6 +7,7 @@
 
     <string name="action_add">Add</string>
     <string name="addressinfo_list_chooseAddress">Which address?</string>
+    <string name="addressinfo_list_add">Add</string>
 
 
 </resources>

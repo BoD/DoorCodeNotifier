@@ -1,3 +1,5 @@
 <resources>
-    <dimen name="addressinfo_list_item_margin">4dp</dimen>
+    <dimen name="addressinfo_list_item_margin_vertical">8dp</dimen>
+    <dimen name="addressinfo_list_item_margin_vertical_adjustment">8dp</dimen>
+    <dimen name="addressinfo_list_item_margin_horizontal">8dp</dimen>
 </resources>

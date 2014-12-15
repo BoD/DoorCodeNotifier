@@ -2,7 +2,6 @@ package org.jraf.android.digibod.handheld.app.addressinfo.list;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.Loader;
 import android.support.v7.widget.LinearLayoutManager;
@@ -13,13 +12,14 @@ import android.view.ViewGroup;
 
 import org.jraf.android.digibod.R;
 import org.jraf.android.digibod.handheld.model.addressinfo.AddressInfo;
+import org.jraf.android.util.app.base.BaseFragment;
 
 import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
-public class AddressInfoListFragment extends Fragment implements LoaderManager.LoaderCallbacks<List<AddressInfo>> {
+public class AddressInfoListFragment extends BaseFragment<AddressInfoCallbacks> implements LoaderManager.LoaderCallbacks<List<AddressInfo>> {
     @InjectView(R.id.rclList)
     protected RecyclerView mRclList;
 
@@ -48,7 +48,7 @@ public class AddressInfoListFragment extends Fragment implements LoaderManager.L
     @Override
     public void onLoadFinished(Loader<List<AddressInfo>> loader, List<AddressInfo> data) {
         if (mAdapter == null) {
-            mAdapter=new AddressInfoAdapter(getActivity());
+            mAdapter=new AddressInfoAdapter(getActivity(), getCallbacks());
             mRclList.setAdapter(mAdapter);
         } else {
             mAdapter.clear();

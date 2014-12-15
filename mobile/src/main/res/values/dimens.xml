@@ -7,8 +7,11 @@
     <dimen name="text_medium">18sp</dimen>
     <dimen name="text_large">22sp</dimen>
 
-    <dimen name="addressinfo_list_item_margin">2dp</dimen>
+    <dimen name="addressinfo_list_item_margin_vertical">5dp</dimen>
+    <dimen name="addressinfo_list_item_margin_vertical_adjustment">5dp</dimen>
+    <dimen name="addressinfo_list_item_margin_horizontal">6dp</dimen>
 
     <dimen name="fab_size_normal">56dp</dimen>
+    <dimen name="addressinfo_list_item_photo_width">@dimen/fab_size_normal</dimen>
 
 </resources>

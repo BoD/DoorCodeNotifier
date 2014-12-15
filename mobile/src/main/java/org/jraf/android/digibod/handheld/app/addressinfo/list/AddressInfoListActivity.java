@@ -27,8 +27,11 @@ import org.jraf.android.util.string.StringUtil;
 
 import java.util.ArrayList;
 
+import butterknife.ButterKnife;
+import butterknife.OnClick;
 
-public class AddressInfoListActivity extends ActionBarActivity implements AlertDialogListener {
+
+public class AddressInfoListActivity extends ActionBarActivity implements AlertDialogListener, AddressInfoCallbacks {
     private static final int REQUEST_CONTACT_PICK = 0;
     private static final int DIALOG_CHOOSE_ADDRESS_TO_EDIT = 0;
 
@@ -36,6 +39,7 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.addressinfo_list);
+        ButterKnife.inject(this);
     }
 
     @Override
@@ -49,20 +53,17 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_add:
-                onAddClicked();
-                return true;
+//            case R.id.action_add:
+//                onAddClicked();
+//                return true;
 
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
-    private void onAddClicked() {
-        onNewContactClicked();
-    }
-
-    private void onNewContactClicked() {
+    @OnClick(R.id.btnAdd)
+    protected void onAddClicked() {
         // For some unknown reason, when starting the contact list activity with ACTION_PICK, the "create new contact" button
         // is hidden.  It is visible when starting with ACTION_GET_CONTENT.
         // Because of this, we first find which component deals with ACTION_PICK, but then start it with ACTION_GET_CONTENT.
@@ -229,5 +230,15 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
                 Log.d("contactId=" + contactId + " chosenUri=" + chosenUri);
                 break;
         }
+    }
+
+
+    /*
+     * AddressInfoCallbacks implementation.
+     */
+
+    @Override
+    public void onAddressInfoClicked(AddressInfo addressInfo) {
+        Log.d("addressInfo=" + addressInfo.uri);
     }
 }
