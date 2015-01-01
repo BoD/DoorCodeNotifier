@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 
 public class AddressInfo {
     public static final String SEPARATOR = "\n--\n";
-    private static final Pattern PATTERN_CODE = Pattern.compile("Code( \\d+){0,1}: (.+)");
+    private static final Pattern PATTERN_CODE = Pattern.compile("Code( \\d+)?: (.+)");
     private static final Pattern PATTERN_COORDINATES = Pattern.compile("Coordinates: (\\d+), (\\d+)");
 
     public ContactInfo contactInfo;
@@ -31,9 +31,8 @@ public class AddressInfo {
     /**
      * Any other info (optional) present in the augmented data.
      */
-    public
     @Nullable
-    String otherInfo;
+    public String otherInfo;
 
     public static AddressInfo parse(String sourceFormattedAddress) throws ParseException {
         AddressInfo res = new AddressInfo();

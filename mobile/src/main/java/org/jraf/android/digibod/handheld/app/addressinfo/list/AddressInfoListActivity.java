@@ -169,6 +169,7 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
 
     private void createAddressAndEdit(long contactId) {
         Log.d("contactId=" + contactId);
+        // TODO
     }
 
     private void chooseAddressToEdit(long contactId, ArrayList<StructuredPostal> structuredPostalList) {
@@ -240,5 +241,6 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
     @Override
     public void onAddressInfoClicked(AddressInfo addressInfo) {
         Log.d("addressInfo=" + addressInfo.uri);
+        startAddressInfoEditActivity(addressInfo.uri);
     }
 }
