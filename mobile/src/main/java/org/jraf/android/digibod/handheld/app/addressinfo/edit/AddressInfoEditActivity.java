@@ -9,6 +9,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -47,7 +48,7 @@ public class AddressInfoEditActivity extends ActionBarActivity {
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             // Inflate a custom action bar that contains the "done" button for saving changes
-            View customActionBarView = getLayoutInflater().inflate(R.layout.editor_custom_action_bar, null);
+            View customActionBarView = getLayoutInflater().inflate(R.layout.addressinfo_edit_actionbar, null);
             View saveMenuItem = customActionBarView.findViewById(R.id.save_menu_item);
             saveMenuItem.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -56,13 +57,11 @@ public class AddressInfoEditActivity extends ActionBarActivity {
                 }
             });
             TextView txtTitle = (TextView) customActionBarView.findViewById(R.id.title);
-            txtTitle.setText(getResources().getString(R.string.addressinfo_edit_title));
+            txtTitle.setText(getResources().getString(R.string.addressInfo_edit_title));
             // Show the custom action bar but hide the home icon and title
-//            actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM,
-//                    ActionBar.DISPLAY_SHOW_CUSTOM | ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
-         actionBar.setDisplayShowTitleEnabled(false);
-            actionBar.setDisplayShowCustomEnabled(true);
-            actionBar.setCustomView(customActionBarView, new ActionBar.LayoutParams(ActionBar.LayoutParams.MATCH_PARENT, ActionBar.LayoutParams.MATCH_PARENT));
+            actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM,
+                    ActionBar.DISPLAY_SHOW_CUSTOM | ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
+            actionBar.setCustomView(customActionBarView);
         }
 
         ButterKnife.inject(this);
@@ -115,7 +114,7 @@ public class AddressInfoEditActivity extends ActionBarActivity {
             protected void onPostExecuteOk() {
                 onDataLoaded();
             }
-        }.toastFail(R.string.addressinfo_edit_loadError)).execute(getSupportFragmentManager());
+        }.toastFail(R.string.addressInfo_edit_loadError)).execute(getSupportFragmentManager());
     }
 
     private void onDataLoaded() {
@@ -133,29 +132,27 @@ public class AddressInfoEditActivity extends ActionBarActivity {
         // Codes
         int i = 1;
         for (String code : mAddressInfo.codeList) {
-            View codeView = getLayoutInflater().inflate(R.layout.addressinfo_list_item_code, (ViewGroup) mConFields, false);
+            View codeView = getLayoutInflater().inflate(R.layout.addressinfo_edit_code, (ViewGroup) mConFields, false);
 
-            TextView txtTitle = (TextView) codeView.findViewById(R.id.txtTitle);
-            if (mAddressInfo.codeList.size() == 1) {
-                txtTitle.setVisibility(View.GONE);
-            } else {
-                txtTitle.setText(getString(R.string.addressinfo_list_code, i));
-            }
+//            TextView txtTitle = (TextView) codeView.findViewById(R.id.txtTitle);
+//            if (mAddressInfo.codeList.size() == 1) {
+//                txtTitle.setVisibility(View.GONE);
+//            } else {
+//                txtTitle.setText(getString(R.string.addressinfo_list_code, i));
+//            }
 
-            TextView txtValue = (TextView) codeView.findViewById(R.id.txtValue);
-            txtValue.setText(code);
+            EditText edtValue = (EditText) codeView.findViewById(R.id.edtValue);
+            edtValue.append(code);
 
             mConFields.addView(codeView);
             i++;
         }
 
         // Other info
-        if (mAddressInfo.otherInfo != null) {
-            View otherInfoView = getLayoutInflater().inflate(R.layout.addressinfo_list_item_otherinfo, (ViewGroup) mConFields, false);
-            TextView txtValue = (TextView) otherInfoView.findViewById(R.id.txtValue);
-            txtValue.setText(mAddressInfo.otherInfo);
-            mConFields.addView(otherInfoView);
-        }
+        View otherInfoView = getLayoutInflater().inflate(R.layout.addressinfo_edit_otherinfo, (ViewGroup) mConFields, false);
+        EditText edtOtherInfo = (EditText) otherInfoView.findViewById(R.id.edtOtherInfo);
+        if (mAddressInfo.otherInfo != null) edtOtherInfo.append(mAddressInfo.otherInfo);
+        mConFields.addView(otherInfoView);
     }
 
     private void onDoneClicked() {

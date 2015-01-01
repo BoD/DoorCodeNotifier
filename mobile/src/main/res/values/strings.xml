@@ -3,13 +3,15 @@
 
     <string name="app_name">DigiBoD</string>
 
-    <string name="addressinfo_list_code">Code #%1$d</string>
+    <string name="addressInfo_list_code">Code #%1$d</string>
 
     <string name="action_add">Add</string>
-    <string name="addressinfo_list_chooseAddress">Which address?</string>
-    <string name="addressinfo_list_add">Add</string>
-    <string name="addressinfo_edit_loadError">Could not load this address</string>
+    <string name="addressInfo_list_chooseAddress">Which address?</string>
+    <string name="addressInfo_list_add">Add</string>
+    <string name="addressInfo_edit_loadError">Could not load this address</string>
     <string name="menu_done">Done</string>
-    <string name="addressinfo_edit_title">Address information</string>
+    <string name="addressInfo_edit_title">Address information</string>
+    <string name="addressInfo_edit_code_hint">Code</string>
+    <string name="addressInfo_edit_otherInfo_hint">Other information (e.g. floor)</string>
 
 </resources>

@@ -202,7 +202,7 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
         // Ask the user which address they want to edit
         dialogFragment.setItems(items);
         payload.putParcelableArrayList("uris", uris);
-        dialogFragment.setTitle(R.string.addressinfo_list_chooseAddress);
+        dialogFragment.setTitle(R.string.addressInfo_list_chooseAddress);
         dialogFragment.setPayload(payload);
         dialogFragment.show(getSupportFragmentManager());
     }

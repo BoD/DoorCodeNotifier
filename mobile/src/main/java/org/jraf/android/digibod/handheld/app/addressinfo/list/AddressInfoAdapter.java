@@ -94,7 +94,7 @@ public class AddressInfoAdapter extends RecyclerView.Adapter<AddressInfoAdapter.
             if (addressInfo.codeList.size() == 1) {
                 txtTitle.setVisibility(View.GONE);
             } else {
-                txtTitle.setText(mContext.getString(R.string.addressinfo_list_code, i));
+                txtTitle.setText(mContext.getString(R.string.addressInfo_list_code, i));
             }
 
             TextView txtValue = (TextView) codeView.findViewById(R.id.txtValue);
