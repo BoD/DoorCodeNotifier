@@ -9,5 +9,7 @@
     <string name="addressinfo_list_chooseAddress">Which address?</string>
     <string name="addressinfo_list_add">Add</string>
     <string name="addressinfo_edit_loadError">Could not load this address</string>
+    <string name="menu_done">Done</string>
+    <string name="addressinfo_edit_title">Address information</string>
 
 </resources>

@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,6 +43,28 @@ public class AddressInfoEditActivity extends ActionBarActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.addressinfo_list_item);
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            // Inflate a custom action bar that contains the "done" button for saving changes
+            View customActionBarView = getLayoutInflater().inflate(R.layout.editor_custom_action_bar, null);
+            View saveMenuItem = customActionBarView.findViewById(R.id.save_menu_item);
+            saveMenuItem.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onDoneClicked();
+                }
+            });
+            TextView txtTitle = (TextView) customActionBarView.findViewById(R.id.title);
+            txtTitle.setText(getResources().getString(R.string.addressinfo_edit_title));
+            // Show the custom action bar but hide the home icon and title
+//            actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM,
+//                    ActionBar.DISPLAY_SHOW_CUSTOM | ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
+         actionBar.setDisplayShowTitleEnabled(false);
+            actionBar.setDisplayShowCustomEnabled(true);
+            actionBar.setCustomView(customActionBarView, new ActionBar.LayoutParams(ActionBar.LayoutParams.MATCH_PARENT, ActionBar.LayoutParams.MATCH_PARENT));
+        }
+
         ButterKnife.inject(this);
 
         mAddressUri = getIntent().getData();
@@ -61,13 +84,23 @@ public class AddressInfoEditActivity extends ActionBarActivity {
                 };
                 Cursor c = getActivity().getContentResolver().query(addressUri, projection, null, null, null);
                 if (c.moveToNext()) {
-                    AddressInfo addressInfo = AddressInfo.parse(c.getString(2));
+                    String formattedAddress = c.getString(2);
+                    AddressInfo addressInfo;
+                    if (AddressInfo.isAugmented(formattedAddress)) {
+                        // Augmented (existing AddressInfo)
+                        addressInfo = AddressInfo.parseAugmented(formattedAddress);
+                    } else {
+                        // New AddressInfo
+                        addressInfo = new AddressInfo();
+                        addressInfo.formattedAddress = formattedAddress;
+                    }
                     addressInfo.uri = addressUri;
                     addressInfo.contactInfo.uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, c.getLong(0));
                     addressInfo.contactInfo.displayName = c.getString(1);
 
                     getActivity().mAddressInfo = addressInfo;
                 } else {
+                    // Should not normally happen
                     throw new Exception("Could not find uri " + addressUri);
                 }
             }
@@ -123,5 +156,8 @@ public class AddressInfoEditActivity extends ActionBarActivity {
             txtValue.setText(mAddressInfo.otherInfo);
             mConFields.addView(otherInfoView);
         }
+    }
+
+    private void onDoneClicked() {
     }
 }

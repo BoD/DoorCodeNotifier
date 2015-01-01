@@ -20,7 +20,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".handheld.app.addressinfo.edit.AddressInfoEditActivity" />
+
+        <activity android:name=".handheld.app.addressinfo.edit.AddressInfoEditActivity" android:theme="@style/Theme.App.Edit"/>
     </application>
 
 </manifest>

@@ -10,4 +10,5 @@
 
     <color name="fab">@color/accent</color>
     <color name="fab_pressed">@color/accent_light</color>
+    <color name="actionbar_text_color">#FFF</color>
 </resources>

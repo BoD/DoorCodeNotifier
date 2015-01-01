@@ -16,7 +16,7 @@ public class AddressInfo {
     private static final Pattern PATTERN_CODE = Pattern.compile("Code( \\d+)?: (.+)");
     private static final Pattern PATTERN_COORDINATES = Pattern.compile("Coordinates: (\\d+), (\\d+)");
 
-    public ContactInfo contactInfo;
+    public ContactInfo contactInfo = new ContactInfo();
     public Uri uri;
 
     /**
@@ -25,7 +25,6 @@ public class AddressInfo {
     public String formattedAddress;
     public double latitude;
     public double longitude;
-    public float radius;
     public List<String> codeList = new ArrayList<>();
 
     /**
@@ -34,9 +33,8 @@ public class AddressInfo {
     @Nullable
     public String otherInfo;
 
-    public static AddressInfo parse(String sourceFormattedAddress) throws ParseException {
+    public static AddressInfo parseAugmented(String sourceFormattedAddress) throws ParseException {
         AddressInfo res = new AddressInfo();
-        res.contactInfo = new ContactInfo();
         String[] sourceElements = sourceFormattedAddress.split(SEPARATOR);
 
         if (sourceElements.length < 2) {

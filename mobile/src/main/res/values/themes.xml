@@ -18,4 +18,7 @@
         <item name="actionBarStyle">@style/Widget.App.ActionBar</item>
     </style>
 
+    <style name="Theme.App.Edit" >
+        <item name="toolbarStyle">@style/Widget.App.Toolbar.NoInsetStart</item>
+    </style>
 </resources>

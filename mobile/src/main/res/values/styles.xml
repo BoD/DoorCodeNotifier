@@ -4,4 +4,8 @@
     <style name="Widget.App.ActionBar" parent="@style/Widget.AppCompat.Light.ActionBar.Solid.Inverse">
         <item name="elevation">2dp</item>
     </style>
+
+    <style name="Widget.App.Toolbar.NoInsetStart" parent="@style/Widget.AppCompat.Toolbar">
+        <item name="contentInsetStart">0px</item>
+    </style>
 </resources>

@@ -46,7 +46,7 @@ public class AddressInfoLoader extends AsyncTaskLoader<List<AddressInfo>> {
 
             AddressInfo addressInfo;
             try {
-                addressInfo = AddressInfo.parse(mCursor.getString(3));
+                addressInfo = AddressInfo.parseAugmented(mCursor.getString(3));
             } catch (ParseException e) {
                 Log.w("Ignoring StructuredPostal " + structuredPostalUri, e);
                 continue;
