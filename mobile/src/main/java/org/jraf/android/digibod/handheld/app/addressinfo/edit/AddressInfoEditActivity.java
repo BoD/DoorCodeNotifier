@@ -1,5 +1,6 @@
 package org.jraf.android.digibod.handheld.app.addressinfo.edit;
 
+import android.animation.LayoutTransition;
 import android.content.ContentUris;
 import android.database.Cursor;
 import android.net.Uri;
@@ -37,13 +38,15 @@ public class AddressInfoEditActivity extends ActionBarActivity {
     @InjectView(R.id.conFields)
     protected ViewGroup mConFields;
 
+    private EditText mEdtOtherInfo;
+
     private Uri mAddressUri;
     private AddressInfo mAddressInfo;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.addressinfo_list_item);
+        setContentView(R.layout.addressinfo_edit);
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -132,7 +135,7 @@ public class AddressInfoEditActivity extends ActionBarActivity {
         // Codes
         int i = 1;
         for (String code : mAddressInfo.codeList) {
-            View codeView = getLayoutInflater().inflate(R.layout.addressinfo_edit_code, (ViewGroup) mConFields, false);
+            final View codeView = getLayoutInflater().inflate(R.layout.addressinfo_edit_code, (ViewGroup) mConFields, false);
 
 //            TextView txtTitle = (TextView) codeView.findViewById(R.id.txtTitle);
 //            if (mAddressInfo.codeList.size() == 1) {
@@ -144,15 +147,37 @@ public class AddressInfoEditActivity extends ActionBarActivity {
             EditText edtValue = (EditText) codeView.findViewById(R.id.edtValue);
             edtValue.append(code);
 
+            codeView.findViewById(R.id.btnRemove).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mConFields.removeView(codeView);
+                }
+            });
+
+            // Focus the first code
+            if (i == 1) edtValue.requestFocus();
+
             mConFields.addView(codeView);
             i++;
         }
 
         // Other info
         View otherInfoView = getLayoutInflater().inflate(R.layout.addressinfo_edit_otherinfo, (ViewGroup) mConFields, false);
-        EditText edtOtherInfo = (EditText) otherInfoView.findViewById(R.id.edtOtherInfo);
-        if (mAddressInfo.otherInfo != null) edtOtherInfo.append(mAddressInfo.otherInfo);
+        mEdtOtherInfo = (EditText) otherInfoView.findViewById(R.id.edtOtherInfo);
+
+        otherInfoView.findViewById(R.id.btnOtherInfoClear).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mEdtOtherInfo.setText(null);
+                mEdtOtherInfo.requestFocus();
+            }
+        });
+        if (mAddressInfo.otherInfo != null) mEdtOtherInfo.append(mAddressInfo.otherInfo);
         mConFields.addView(otherInfoView);
+
+        // Enable layout transitions
+        LayoutTransition layoutTransition = new LayoutTransition();
+        mConFields.setLayoutTransition(layoutTransition);
     }
 
     private void onDoneClicked() {

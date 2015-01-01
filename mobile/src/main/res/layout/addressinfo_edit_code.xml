@@ -3,8 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:paddingLeft="8dp"
->
+    android:paddingLeft="4dp">
 
     <EditText
         android:id="@+id/edtValue"
@@ -17,9 +16,11 @@
         android:textSize="64sp" />
 
     <ImageView
+        android:id="@+id/btnRemove"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
+        android:layout_marginLeft="4dp"
         android:background="?android:attr/selectableItemBackground"
         android:padding="8dp"
         android:src="@drawable/ic_menu_remove_field_holo_light" />

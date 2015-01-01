@@ -4,8 +4,7 @@
     android:layout_height="wrap_content"
     android:layout_marginTop="16dp"
     android:orientation="horizontal"
-    android:paddingLeft="8dp"
-    >
+    android:paddingLeft="4dp">
 
     <EditText
         android:id="@+id/edtOtherInfo"
@@ -19,9 +18,11 @@
         />
 
     <ImageView
+        android:id="@+id/btnOtherInfoClear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
+        android:layout_marginLeft="4dp"
         android:background="?android:attr/selectableItemBackground"
         android:padding="8dp"
         android:src="@drawable/ic_menu_remove_field_holo_light" />
