@@ -13,5 +13,6 @@
     <string name="addressInfo_edit_title">Address information</string>
     <string name="addressInfo_edit_code_hint">Code</string>
     <string name="addressInfo_edit_otherInfo_hint">Other information (e.g. floor)</string>
+    <string name="addressInfo_edit_addCode">Add code</string>
 
 </resources>

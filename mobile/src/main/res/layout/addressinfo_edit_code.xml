@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:paddingLeft="4dp">
+    android:paddingLeft="4dp"
+    android:paddingRight="4dp">
 
     <EditText
         android:id="@+id/edtValue"
@@ -12,7 +13,7 @@
         android:layout_weight="1"
         android:fontFamily="sans-serif-thin"
         android:hint="@string/addressInfo_edit_code_hint"
-        android:inputType="textCapCharacters"
+        android:inputType="textVisiblePassword"
         android:textSize="64sp" />
 
     <ImageView

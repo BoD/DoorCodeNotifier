@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="TextAppearance.App.Button" parent="@android:style/TextAppearance.Material.Button">
+        <item name="android:textColor">#FFF</item>
+    </style>
+</resources>

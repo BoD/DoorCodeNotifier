@@ -2,28 +2,26 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="16dp"
+    android:gravity="left"
     android:orientation="horizontal"
     android:paddingLeft="4dp"
     android:paddingRight="4dp">
-    <EditText
-        android:id="@+id/edtOtherInfo"
-        android:layout_width="0px"
+
+    <Button
+        android:id="@+id/btnAddCode"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:fontFamily="sans-serif"
-        android:hint="@string/addressInfo_edit_otherInfo_hint"
-        android:paddingBottom="8dp"
-        android:textSize="@dimen/text_large"
-        />
+        android:text="@string/addressInfo_edit_addCode" />
+
 
     <ImageView
-        android:id="@+id/btnOtherInfoClear"
+        android:id="@+id/btnRemove"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_marginLeft="4dp"
-        android:background="?android:attr/selectableItemBackground"
+        android:background="@null"
         android:padding="8dp"
-        android:src="@drawable/ic_menu_remove_field_holo_light" />
+        android:src="@drawable/ic_menu_remove_field_holo_light"
+        android:visibility="invisible" />
 </LinearLayout>

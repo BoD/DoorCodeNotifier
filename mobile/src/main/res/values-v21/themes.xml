@@ -1,5 +1,8 @@
 <resources>
 
-    <style name="Theme.App.Base" parent="Theme.AppCompat.Light.DarkActionBar" />
+    <style name="Theme.App.Base" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:colorButtonNormal">@color/accent</item>
+        <item name="android:textAppearanceButton">@style/TextAppearance.App.Button</item>
+    </style>
 
 </resources>

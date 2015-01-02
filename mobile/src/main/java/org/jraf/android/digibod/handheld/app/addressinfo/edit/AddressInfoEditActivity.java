@@ -161,6 +161,16 @@ public class AddressInfoEditActivity extends ActionBarActivity {
             i++;
         }
 
+        // Add code button
+        View addCodeView = getLayoutInflater().inflate(R.layout.addressinfo_edit_addcode, (ViewGroup) mConFields, false);
+        addCodeView.findViewById(R.id.btnAddCode).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //TODO
+            }
+        });
+        mConFields.addView(addCodeView);
+
         // Other info
         View otherInfoView = getLayoutInflater().inflate(R.layout.addressinfo_edit_otherinfo, (ViewGroup) mConFields, false);
         mEdtOtherInfo = (EditText) otherInfoView.findViewById(R.id.edtOtherInfo);

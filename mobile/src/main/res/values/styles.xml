@@ -8,4 +8,12 @@
     <style name="Widget.App.Toolbar.NoInsetStart" parent="@style/Widget.AppCompat.Toolbar">
         <item name="contentInsetStart">0px</item>
     </style>
+
+    <style name="Widget.App.Button" parent="@android:style/Widget.Holo.Light.Button">
+        <item name="android:textColor">#FFF</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:background">@drawable/btn_holo_shape</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
 </resources>
