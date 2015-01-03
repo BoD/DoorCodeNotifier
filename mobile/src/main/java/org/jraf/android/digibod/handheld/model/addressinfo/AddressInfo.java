@@ -1,9 +1,15 @@
 package org.jraf.android.digibod.handheld.model.addressinfo;
 
+import android.content.ContentValues;
+import android.content.Context;
 import android.net.Uri;
+import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import org.jraf.android.digibod.handheld.model.contactinfo.ContactInfo;
+import org.jraf.android.util.annotation.Background;
+import org.jraf.android.util.log.wrapper.Log;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -86,5 +92,48 @@ public class AddressInfo {
 
     public static boolean isAugmented(String formattedAddress) {
         return formattedAddress.contains(SEPARATOR);
+    }
+
+    @Background(Background.Type.DISK)
+    public void persist(Context context) {
+        Log.d();
+        // Formatted address
+        StringBuilder resultFormattedAddress = new StringBuilder(formattedAddress);
+        resultFormattedAddress.append(SEPARATOR);
+
+        // Code(s)
+        boolean numbering = codeList.size() > 1;
+        int i = 1;
+        for (String code : codeList) {
+            resultFormattedAddress.append("Code");
+            if (numbering) {
+                resultFormattedAddress.append(" ");
+                resultFormattedAddress.append(String.valueOf(i));
+            }
+            resultFormattedAddress.append(": ");
+            resultFormattedAddress.append(code);
+            resultFormattedAddress.append("\n");
+            i++;
+        }
+
+        // Coordinates
+        resultFormattedAddress.append("Coordinates: ");
+        resultFormattedAddress.append(String.valueOf((int) (latitude * 1e6d)));
+        resultFormattedAddress.append(", ");
+        resultFormattedAddress.append(String.valueOf((int) (longitude * 1e6d)));
+
+        // Other info (optional)
+        if (!TextUtils.isEmpty(otherInfo)) {
+            resultFormattedAddress.append(SEPARATOR);
+            resultFormattedAddress.append(otherInfo);
+        }
+
+        Log.d("resultFormattedAddress=" + resultFormattedAddress);
+
+        // Persist
+        ContentValues contentValues = new ContentValues(1);
+        contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, resultFormattedAddress.toString());
+        int res = context.getContentResolver().update(uri, contentValues, null, null);
+        Log.d("res=" + res);
     }
 }

@@ -27,8 +27,8 @@
                 android:layout_height="@dimen/addressinfo_list_item_photo_width"
                 android:layout_alignParentEnd="true"
                 android:layout_alignParentRight="true"
-                android:layout_marginRight="4dp"
-                android:layout_marginLeft="8dp" />
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="4dp" />
 
             <TextView
                 android:id="@+id/txtContactDisplayName"

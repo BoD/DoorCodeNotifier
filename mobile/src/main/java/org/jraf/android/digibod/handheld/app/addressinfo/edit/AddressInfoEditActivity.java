@@ -3,6 +3,8 @@ package org.jraf.android.digibod.handheld.app.addressinfo.edit;
 import android.animation.LayoutTransition;
 import android.content.ContentUris;
 import android.database.Cursor;
+import android.location.Address;
+import android.location.Geocoder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -21,6 +23,10 @@ import org.jraf.android.digibod.handheld.model.addressinfo.AddressInfo;
 import org.jraf.android.digibod.handheld.util.picasso.RoundTransformation;
 import org.jraf.android.util.async.Task;
 import org.jraf.android.util.async.TaskFragment;
+import org.jraf.android.util.log.wrapper.Log;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -110,12 +116,12 @@ public class AddressInfoEditActivity extends ActionBarActivity {
             @Override
             protected void onPostExecuteFail() {
                 super.onPostExecuteFail();
-                finish();
+                getActivity().finish();
             }
 
             @Override
             protected void onPostExecuteOk() {
-                onDataLoaded();
+                getActivity().onDataLoaded();
             }
         }.toastFail(R.string.addressInfo_edit_loadError)).execute(getSupportFragmentManager());
     }
@@ -154,19 +160,20 @@ public class AddressInfoEditActivity extends ActionBarActivity {
                 }
             });
 
+            mConFields.addView(codeView);
+
             // Focus the first code
             if (i == 1) edtValue.requestFocus();
 
-            mConFields.addView(codeView);
             i++;
         }
 
         // Add code button
-        View addCodeView = getLayoutInflater().inflate(R.layout.addressinfo_edit_addcode, (ViewGroup) mConFields, false);
+        final View addCodeView = getLayoutInflater().inflate(R.layout.addressinfo_edit_addcode, (ViewGroup) mConFields, false);
         addCodeView.findViewById(R.id.btnAddCode).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //TODO
+                addCodeView();
             }
         });
         mConFields.addView(addCodeView);
@@ -190,6 +197,60 @@ public class AddressInfoEditActivity extends ActionBarActivity {
         mConFields.setLayoutTransition(layoutTransition);
     }
 
+    private void addCodeView() {
+        final View codeView = getLayoutInflater().inflate(R.layout.addressinfo_edit_code, (ViewGroup) mConFields, false);
+        EditText edtValue = (EditText) codeView.findViewById(R.id.edtValue);
+        codeView.findViewById(R.id.btnRemove).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mConFields.removeView(codeView);
+            }
+        });
+
+        // Insert it before the "Add" button which is the second to last child
+        int index = mConFields.getChildCount() - 2;
+        mConFields.addView(codeView, index);
+
+        // Focus it now
+        edtValue.requestFocus();
+    }
+
     private void onDoneClicked() {
+        // Code list
+        int childCount = mConFields.getChildCount();
+        List<String> codeList = new ArrayList<>(childCount);
+        for (int i = 0; i < childCount - 2; i++) {
+            View child = mConFields.getChildAt(i);
+            EditText edtValue = (EditText) child.findViewById(R.id.edtValue);
+            codeList.add(edtValue.getText().toString());
+        }
+        mAddressInfo.codeList = codeList;
+
+        // Other info
+        mAddressInfo.otherInfo = mEdtOtherInfo.getText().toString();
+
+        new TaskFragment(new Task<AddressInfoEditActivity>() {
+            @Override
+            protected void doInBackground() throws Throwable {
+                // Geocoding
+                Log.d("Geocoding...");
+                Geocoder geocoder = new Geocoder(getActivity());
+                List<Address> addressList = geocoder.getFromLocationName(getActivity().mAddressInfo.formattedAddress, 1);
+                Log.d("addressList="+addressList);
+                if (addressList == null || addressList.isEmpty()) {
+                    // TODO Handle error
+                    throw new Exception("Could not geocode");
+                }
+                Address address=addressList.get(0);
+                getActivity().mAddressInfo.latitude = address.getLatitude();
+                getActivity().mAddressInfo.longitude = address.getLongitude();
+                getActivity().mAddressInfo.persist(getActivity());
+            }
+
+            @Override
+            protected void onPostExecuteOk() {
+                finish();
+            }
+        }).execute(getSupportFragmentManager());
     }
 }
