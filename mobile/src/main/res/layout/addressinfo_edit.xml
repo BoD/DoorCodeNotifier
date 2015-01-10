@@ -44,18 +44,23 @@
                 android:textStyle="bold"
                 tools:text="Benoît Lubek" />
 
-            <TextView
-                android:id="@+id/txtFormattedAddress"
+            <EditText
+                android:id="@+id/edtFormattedAddress"
                 android:layout_width="0px"
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
                 android:layout_below="@+id/txtContactDisplayName"
-                android:layout_marginLeft="8dp"
+                android:layout_marginLeft="4dp"
                 android:layout_marginTop="0dp"
                 android:layout_toLeftOf="@+id/imgPhoto"
                 android:layout_toStartOf="@+id/imgPhoto"
                 android:fontFamily="sans-serif-light"
+                android:gravity="top"
+                android:hint="@string/addressInfo_edit_formattedAddress_hint"
+                android:inputType="textPostalAddress|textMultiLine"
+                android:minLines="2"
+                android:maxLines="4"
                 android:textSize="@dimen/text_medium"
                 tools:text="19 avenue de Choisy\n75013 PARIS\nFrance" />
 
@@ -63,7 +68,7 @@
                 android:id="@+id/conFields"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/txtFormattedAddress"
+                android:layout_below="@+id/edtFormattedAddress"
                 android:layout_marginTop="12dp"
                 android:orientation="vertical" />
 

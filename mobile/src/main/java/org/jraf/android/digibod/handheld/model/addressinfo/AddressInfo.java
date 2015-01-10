@@ -133,6 +133,11 @@ public class AddressInfo {
         // Persist
         ContentValues contentValues = new ContentValues(1);
         contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, resultFormattedAddress.toString());
+
+//        // Testing
+//        contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.NEIGHBORHOOD, "Neighborhood");
+
+
         int res = context.getContentResolver().update(uri, contentValues, null, null);
         Log.d("res=" + res);
     }

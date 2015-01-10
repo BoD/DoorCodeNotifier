@@ -36,8 +36,8 @@ public class AddressInfoEditActivity extends ActionBarActivity {
     @InjectView(R.id.txtContactDisplayName)
     protected TextView mTxtContactDisplayName;
 
-    @InjectView(R.id.txtFormattedAddress)
-    protected TextView mTxtFormattedAddress;
+    @InjectView(R.id.edtFormattedAddress)
+    protected EditText mEdtFormattedAddress;
 
     @InjectView(R.id.imgPhoto)
     protected ImageView mImgPhoto;
@@ -82,14 +82,15 @@ public class AddressInfoEditActivity extends ActionBarActivity {
         new TaskFragment(new Task<AddressInfoEditActivity>() {
             @Override
             protected void doInBackground() throws Throwable {
-                Uri addressUri = getActivity().mAddressUri;
+                AddressInfoEditActivity a = getActivity();
+                Uri addressUri = a.mAddressUri;
 
                 String[] projection = {
                         ContactsContract.Data.CONTACT_ID, // 0
                         ContactsContract.Contacts.DISPLAY_NAME, // 1
                         ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, // 2
                 };
-                Cursor c = getActivity().getContentResolver().query(addressUri, projection, null, null, null);
+                Cursor c = a.getContentResolver().query(addressUri, projection, null, null, null);
                 if (c.moveToNext()) {
                     String formattedAddress = c.getString(2);
                     AddressInfo addressInfo;
@@ -105,7 +106,7 @@ public class AddressInfoEditActivity extends ActionBarActivity {
                     addressInfo.contactInfo.uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, c.getLong(0));
                     addressInfo.contactInfo.displayName = c.getString(1);
 
-                    getActivity().mAddressInfo = addressInfo;
+                    a.mAddressInfo = addressInfo;
                 } else {
                     // Should not normally happen
                     throw new Exception("Could not find uri " + addressUri);
@@ -133,7 +134,7 @@ public class AddressInfoEditActivity extends ActionBarActivity {
         Picasso.with(this).load(mAddressInfo.contactInfo.uri).transform(RoundTransformation.get()).into(mImgPhoto);
 
         // Formatted address
-        mTxtFormattedAddress.setText(mAddressInfo.formattedAddress);
+        if (mAddressInfo.formattedAddress != null) mEdtFormattedAddress.append(mAddressInfo.formattedAddress);
 
         mConFields.removeAllViews();
 
@@ -231,24 +232,28 @@ public class AddressInfoEditActivity extends ActionBarActivity {
         new TaskFragment(new Task<AddressInfoEditActivity>() {
             @Override
             protected void doInBackground() throws Throwable {
+                AddressInfoEditActivity a = getActivity();
+
+                a.mAddressInfo.formattedAddress = a.mEdtFormattedAddress.getText().toString();
+
                 // Geocoding
                 Log.d("Geocoding...");
-                Geocoder geocoder = new Geocoder(getActivity());
-                List<Address> addressList = geocoder.getFromLocationName(getActivity().mAddressInfo.formattedAddress, 1);
+                Geocoder geocoder = new Geocoder(a);
+                List<Address> addressList = geocoder.getFromLocationName(a.mAddressInfo.formattedAddress, 1);
                 Log.d("addressList=" + addressList);
                 if (addressList == null || addressList.isEmpty()) {
                     // TODO Handle error
                     throw new Exception("Could not geocode");
                 }
                 Address address = addressList.get(0);
-                getActivity().mAddressInfo.latitude = address.getLatitude();
-                getActivity().mAddressInfo.longitude = address.getLongitude();
-                getActivity().mAddressInfo.persist(getActivity());
+                a.mAddressInfo.latitude = address.getLatitude();
+                a.mAddressInfo.longitude = address.getLongitude();
+                a.mAddressInfo.persist(a);
             }
 
             @Override
             protected void onPostExecuteOk() {
-                finish();
+                getActivity().finish();
             }
         }).execute(getSupportFragmentManager());
     }

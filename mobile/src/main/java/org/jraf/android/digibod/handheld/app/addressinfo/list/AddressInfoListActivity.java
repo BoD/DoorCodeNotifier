@@ -23,6 +23,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CompoundButton;
+import android.widget.Toast;
 
 import org.jraf.android.digibod.R;
 import org.jraf.android.digibod.handheld.Constants;
@@ -138,7 +139,8 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
             protected void doInBackground() throws Throwable {
                 // 1/ Find the contact id from the contact lookup uri
                 String[] projection = {ContactsContract.Contacts._ID};
-                Cursor c = getActivity().getContentResolver().query(contactLookupUri, projection, null, null, null);
+                AddressInfoListActivity a = getActivity();
+                Cursor c = a.getContentResolver().query(contactLookupUri, projection, null, null, null);
                 long contactId = 0;
                 try {
                     if (c.moveToNext()) {
@@ -158,7 +160,7 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
                 };
                 String selection = ContactsContract.Contacts.Data.MIMETYPE + "=? AND " + ContactsContract.Data.CONTACT_ID + "=?";
                 String[] selectionArg = {ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE, String.valueOf(contactId)};
-                c = getActivity().getContentResolver().query(ContactsContract.Data.CONTENT_URI, projection, selection, selectionArg, null);
+                c = a.getContentResolver().query(ContactsContract.Data.CONTENT_URI, projection, selection, selectionArg, null);
                 try {
                     while (c.moveToNext()) {
                         StructuredPostal structuredPostal = new StructuredPostal();
@@ -172,20 +174,20 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
 
                 if (structuredPostalList.isEmpty()) {
                     // The selected contact has no addresses: create one now and edit it
-                    getActivity().createAddressAndEdit(contactId);
+                    a.createAddressAndEdit(contactId);
                 } else if (structuredPostalList.size() == 1) {
                     // The selected contact has 1 address
                     StructuredPostal structuredPostal = structuredPostalList.get(0);
                     if (AddressInfo.isAugmented(structuredPostal.formattedAddress)) {
                         // The address is already augmented: create a new address now and edit it
-                        getActivity().createAddressAndEdit(contactId);
+                        a.createAddressAndEdit(contactId);
                     } else {
                         // The address is not augmented: edit it now
-                        getActivity().startAddressInfoEditActivity(structuredPostal.uri);
+                        a.startAddressInfoEditActivity(structuredPostal.uri);
                     }
                 } else {
                     // The selected contact has several addresses: ask the user which one he wants to edit
-                    getActivity().chooseAddressToEdit(contactId, structuredPostalList);
+                    a.chooseAddressToEdit(contactId, structuredPostalList);
                 }
             }
         }).execute(getSupportFragmentManager());
@@ -208,15 +210,26 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
         String[] selectionArgs = {String.valueOf(contactId)};
         Cursor c = getContentResolver().query(ContactsContract.RawContacts.CONTENT_URI, projection, selection, selectionArgs, null);
         long rawContactId = -1;
-        if (c.moveToFirst()) {
-            rawContactId = c.getLong(0);
-        } else {
-            //TODO eror handling
+        try {
+            if (c.moveToFirst()) {
+                rawContactId = c.getLong(0);
+            } else {
+                // Should never happen
+                Log.e("Could not find raw contact for contact " + contactId, new Exception());
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(AddressInfoListActivity.this, R.string.common_unexpected, Toast.LENGTH_LONG).show();
+                    }
+                });
+                return;
+            }
+        } finally {
+            c.close();
         }
-        c.close();
 
         ContentValues contentValues = new ContentValues(2);
-        contentValues.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS);
+        contentValues.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE);
         contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, "");
         contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawContactId);
         Uri res = getContentResolver().insert(ContactsContract.Data.CONTENT_URI, contentValues);
