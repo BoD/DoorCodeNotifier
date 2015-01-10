@@ -1,22 +1,32 @@
 package org.jraf.android.digibod.handheld.app.addressinfo.list;
 
+import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.support.v7.widget.SwitchCompat;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.CompoundButton;
 
 import org.jraf.android.digibod.R;
+import org.jraf.android.digibod.handheld.Constants;
 import org.jraf.android.digibod.handheld.app.addressinfo.edit.AddressInfoEditActivity;
+import org.jraf.android.digibod.handheld.app.geofencing.GeofencingService;
 import org.jraf.android.digibod.handheld.model.addressinfo.AddressInfo;
 import org.jraf.android.util.async.Task;
 import org.jraf.android.util.async.TaskFragment;
@@ -39,7 +49,26 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.addressinfo_list);
+
+        // Custom action bar that contains the "done" button for saving changes
+        ActionBar actionBar = getSupportActionBar();
+        @SuppressLint("InflateParams") View customActionBarView = getLayoutInflater().inflate(R.layout.addressinfo_list_actionbar, null);
+        SwitchCompat swiGeotracking = (SwitchCompat) customActionBarView.findViewById(R.id.swiGeofencing);
+        SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean enabled = preferenceManager.getBoolean(Constants.PREF_GEOFENCING_ENABLED, Constants.PREF_GEOFENCING_ENABLED_DEFAULT);
+        swiGeotracking.setChecked(enabled);
+        swiGeotracking.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                onGeotrackingCheckedChanged(isChecked);
+            }
+        });
+        actionBar.setDisplayShowCustomEnabled(true);
+        actionBar.setCustomView(customActionBarView, new ActionBar.LayoutParams(Gravity.CENTER_VERTICAL | Gravity.RIGHT));
+
         ButterKnife.inject(this);
+
+        // TODO Check for Google Play Services ( http://developer.android.com/training/location/geofencing.html )
     }
 
     @Override
@@ -243,4 +272,14 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
         Log.d("addressInfo=" + addressInfo.uri);
         startAddressInfoEditActivity(addressInfo.uri);
     }
+
+
+    private void onGeotrackingCheckedChanged(boolean isChecked) {
+        SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
+        preferenceManager.edit().putBoolean(Constants.PREF_GEOFENCING_ENABLED, isChecked).commit();
+        Intent intent = new Intent(this, GeofencingService.class);
+        intent.setAction(GeofencingService.ACTION_REFRESH_GEOFENCES);
+        startService(intent);
+    }
+
 }

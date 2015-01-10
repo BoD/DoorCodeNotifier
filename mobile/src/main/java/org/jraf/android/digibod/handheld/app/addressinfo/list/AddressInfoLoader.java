@@ -29,6 +29,36 @@ public class AddressInfoLoader extends AsyncTaskLoader<List<AddressInfo>> {
         Log.d();
         List<AddressInfo> data = new ArrayList<>();
 
+        mCursor = queryContactProvider(getContext());
+        mCursor.registerContentObserver(mObserver);
+        while (mCursor.moveToNext()) {
+            AddressInfo addressInfo = getAddressInfoFromCursor(mCursor);
+            if (addressInfo == null) continue;
+
+            data.add(addressInfo);
+        }
+
+        return data;
+    }
+
+    private static AddressInfo getAddressInfoFromCursor(Cursor cursor) {
+        Uri structuredPostalUri = ContentUris.withAppendedId(ContactsContract.Data.CONTENT_URI, cursor.getLong(2));
+
+        AddressInfo addressInfo;
+        try {
+            addressInfo = AddressInfo.parseAugmented(cursor.getString(3));
+        } catch (ParseException e) {
+            Log.w("Ignoring StructuredPostal " + structuredPostalUri, e);
+            return null;
+        }
+
+        addressInfo.uri = structuredPostalUri;
+        addressInfo.contactInfo.uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, cursor.getLong(0));
+        addressInfo.contactInfo.displayName = cursor.getString(1);
+        return addressInfo;
+    }
+
+    private static Cursor queryContactProvider(Context context) {
         String[] projection = {
                 ContactsContract.Data.CONTACT_ID, // 0
                 ContactsContract.Contacts.DISPLAY_NAME, // 1
@@ -39,25 +69,21 @@ public class AddressInfoLoader extends AsyncTaskLoader<List<AddressInfo>> {
                 ContactsContract.Contacts.Data.MIMETYPE + "=? AND " + ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS + " LIKE ?";
         String[] selectionArg = {ContactsContract.CommonDataKinds.StructuredPostal.CONTENT_ITEM_TYPE, "%" + AddressInfo.SEPARATOR + "%"};
         String sortOrder = ContactsContract.Contacts.DISPLAY_NAME;
-        mCursor = getContext().getContentResolver().query(ContactsContract.Data.CONTENT_URI, projection, selection, selectionArg, sortOrder);
-        mCursor.registerContentObserver(mObserver);
-        while (mCursor.moveToNext()) {
-            Uri structuredPostalUri = ContentUris.withAppendedId(ContactsContract.Data.CONTENT_URI, mCursor.getLong(2));
+        return context.getContentResolver().query(ContactsContract.Data.CONTENT_URI, projection, selection, selectionArg, sortOrder);
+    }
 
-            AddressInfo addressInfo;
-            try {
-                addressInfo = AddressInfo.parseAugmented(mCursor.getString(3));
-            } catch (ParseException e) {
-                Log.w("Ignoring StructuredPostal " + structuredPostalUri, e);
-                continue;
-            }
+    public static List<AddressInfo> retrieveAddressInfoList(Context context) {
+        Log.d();
+        List<AddressInfo> data = new ArrayList<>();
 
-            addressInfo.uri = structuredPostalUri;
-            addressInfo.contactInfo.uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, mCursor.getLong(0));
-            addressInfo.contactInfo.displayName = mCursor.getString(1);
+        Cursor cursor = queryContactProvider(context);
+        while (cursor.moveToNext()) {
+            AddressInfo addressInfo = getAddressInfoFromCursor(cursor);
+            if (addressInfo == null) continue;
 
             data.add(addressInfo);
         }
+        cursor.close();
 
         return data;
     }

@@ -1,6 +1,7 @@
 package org.jraf.android.digibod.handheld.app.addressinfo.edit;
 
 import android.animation.LayoutTransition;
+import android.annotation.SuppressLint;
 import android.content.ContentUris;
 import android.database.Cursor;
 import android.location.Address;
@@ -54,24 +55,22 @@ public class AddressInfoEditActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.addressinfo_edit);
 
+        // Custom action bar that contains the "done" button for saving changes
         ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            // Inflate a custom action bar that contains the "done" button for saving changes
-            View customActionBarView = getLayoutInflater().inflate(R.layout.addressinfo_edit_actionbar, null);
-            View saveMenuItem = customActionBarView.findViewById(R.id.save_menu_item);
-            saveMenuItem.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    onDoneClicked();
-                }
-            });
-            TextView txtTitle = (TextView) customActionBarView.findViewById(R.id.title);
-            txtTitle.setText(getResources().getString(R.string.addressInfo_edit_title));
-            // Show the custom action bar but hide the home icon and title
-            actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM,
-                    ActionBar.DISPLAY_SHOW_CUSTOM | ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
-            actionBar.setCustomView(customActionBarView);
-        }
+        @SuppressLint("InflateParams") View customActionBarView = getLayoutInflater().inflate(R.layout.addressinfo_edit_actionbar, null);
+        View saveMenuItem = customActionBarView.findViewById(R.id.save_menu_item);
+        saveMenuItem.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onDoneClicked();
+            }
+        });
+        TextView txtTitle = (TextView) customActionBarView.findViewById(R.id.title);
+        txtTitle.setText(getResources().getString(R.string.addressInfo_edit_title));
+        // Show the custom action bar but hide the home icon and title
+        actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM,
+                ActionBar.DISPLAY_SHOW_CUSTOM | ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
+        actionBar.setCustomView(customActionBarView);
 
         ButterKnife.inject(this);
 
@@ -236,12 +235,12 @@ public class AddressInfoEditActivity extends ActionBarActivity {
                 Log.d("Geocoding...");
                 Geocoder geocoder = new Geocoder(getActivity());
                 List<Address> addressList = geocoder.getFromLocationName(getActivity().mAddressInfo.formattedAddress, 1);
-                Log.d("addressList="+addressList);
+                Log.d("addressList=" + addressList);
                 if (addressList == null || addressList.isEmpty()) {
                     // TODO Handle error
                     throw new Exception("Could not geocode");
                 }
-                Address address=addressList.get(0);
+                Address address = addressList.get(0);
                 getActivity().mAddressInfo.latitude = address.getLatitude();
                 getActivity().mAddressInfo.longitude = address.getLongitude();
                 getActivity().mAddressInfo.persist(getActivity());
