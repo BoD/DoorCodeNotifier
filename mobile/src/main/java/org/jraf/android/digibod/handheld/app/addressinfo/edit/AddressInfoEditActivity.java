@@ -168,6 +168,23 @@ public class AddressInfoEditActivity extends ActionBarActivity {
             i++;
         }
 
+        // If there are no codes, show an empty code EditView
+        if (i == 1) {
+            final View codeView = getLayoutInflater().inflate(R.layout.addressinfo_edit_code, (ViewGroup) mConFields, false);
+
+            EditText edtValue = (EditText) codeView.findViewById(R.id.edtValue);
+            codeView.findViewById(R.id.btnRemove).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mConFields.removeView(codeView);
+                }
+            });
+            mConFields.addView(codeView);
+
+            // Focus it
+            edtValue.requestFocus();
+        }
+
         // Add code button
         final View addCodeView = getLayoutInflater().inflate(R.layout.addressinfo_edit_addcode, (ViewGroup) mConFields, false);
         addCodeView.findViewById(R.id.btnAddCode).setOnClickListener(new View.OnClickListener() {
@@ -222,7 +239,8 @@ public class AddressInfoEditActivity extends ActionBarActivity {
         for (int i = 0; i < childCount - 2; i++) {
             View child = mConFields.getChildAt(i);
             EditText edtValue = (EditText) child.findViewById(R.id.edtValue);
-            codeList.add(edtValue.getText().toString());
+            String code = edtValue.getText().toString().trim();
+            if (!code.isEmpty()) codeList.add(code);
         }
         mAddressInfo.codeList = codeList;
 
