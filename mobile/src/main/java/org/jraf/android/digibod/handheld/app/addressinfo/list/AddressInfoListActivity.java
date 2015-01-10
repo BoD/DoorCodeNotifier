@@ -3,6 +3,7 @@ package org.jraf.android.digibod.handheld.app.addressinfo.list;
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -198,12 +199,33 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
 
     private void createAddressAndEdit(long contactId) {
         Log.d("contactId=" + contactId);
-        // TODO
+
+        // We need a raw contact for the selected contact.
+        // If there are several, just arbitrarily pick the first one - this is not ideal, but the alternative would be to ask the user
+        // which is not cool either.
+        String[] projection = {ContactsContract.RawContacts._ID};
+        String selection = ContactsContract.RawContacts.CONTACT_ID + "=?";
+        String[] selectionArgs = {String.valueOf(contactId)};
+        Cursor c = getContentResolver().query(ContactsContract.RawContacts.CONTENT_URI, projection, selection, selectionArgs, null);
+        long rawContactId = -1;
+        if (c.moveToFirst()) {
+            rawContactId = c.getLong(0);
+        } else {
+            //TODO eror handling
+        }
+        c.close();
+
+        ContentValues contentValues = new ContentValues(2);
+        contentValues.put(ContactsContract.Contacts.Data.MIMETYPE, ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS);
+        contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, "");
+        contentValues.put(ContactsContract.Data.RAW_CONTACT_ID, rawContactId);
+        Uri res = getContentResolver().insert(ContactsContract.Data.CONTENT_URI, contentValues);
+        Log.d("res=" + res);
+        startAddressInfoEditActivity(res);
     }
 
     private void chooseAddressToEdit(long contactId, ArrayList<StructuredPostal> structuredPostalList) {
         Log.d();
-        AlertDialogFragment dialogFragment = AlertDialogFragment.newInstance(DIALOG_CHOOSE_ADDRESS_TO_EDIT);
         ArrayList<CharSequence> items = new ArrayList<>(structuredPostalList.size());
         Bundle payload = new Bundle();
         payload.putLong("contactId", contactId);
@@ -229,6 +251,7 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
         }
 
         // Ask the user which address they want to edit
+        AlertDialogFragment dialogFragment = AlertDialogFragment.newInstance(DIALOG_CHOOSE_ADDRESS_TO_EDIT);
         dialogFragment.setItems(items);
         payload.putParcelableArrayList("uris", uris);
         dialogFragment.setTitle(R.string.addressInfo_list_chooseAddress);
