@@ -2,11 +2,13 @@ package org.jraf.android.digibod.handheld.app.addressinfo.list;
 
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.support.v4.content.AsyncTaskLoader;
 
+import org.jraf.android.digibod.handheld.app.geofencing.GeofencingService;
 import org.jraf.android.digibod.handheld.model.addressinfo.AddressInfo;
 import org.jraf.android.util.log.wrapper.Log;
 
@@ -16,12 +18,11 @@ import java.util.List;
 
 public class AddressInfoLoader extends AsyncTaskLoader<List<AddressInfo>> {
     private List<AddressInfo> mData;
-    private ForceLoadContentObserver mObserver;
+    private ForceLoadContentObserver mObserver = new ForceLoadContentObserver();
     private Cursor mCursor;
 
     public AddressInfoLoader(Context ctx) {
         super(ctx);
-        mObserver = new ForceLoadContentObserver();
     }
 
     @Override
@@ -122,6 +123,9 @@ public class AddressInfoLoader extends AsyncTaskLoader<List<AddressInfo>> {
     public void onContentChanged() {
         Log.d();
         super.onContentChanged();
+        Intent intent = new Intent(getContext(), GeofencingService.class);
+        intent.setAction(GeofencingService.ACTION_REFRESH_GEOFENCES);
+        getContext().startService(intent);
     }
 
     @Override

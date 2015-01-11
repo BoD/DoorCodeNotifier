@@ -27,6 +27,8 @@ import org.jraf.android.digibod.handheld.model.addressinfo.AddressInfo;
 import org.jraf.android.digibod.handheld.util.picasso.RoundTransformation;
 import org.jraf.android.util.async.Task;
 import org.jraf.android.util.async.TaskFragment;
+import org.jraf.android.util.dialog.AlertDialogFragment;
+import org.jraf.android.util.dialog.AlertDialogListener;
 import org.jraf.android.util.log.wrapper.Log;
 
 import java.util.ArrayList;
@@ -35,7 +37,9 @@ import java.util.List;
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
-public class AddressInfoEditActivity extends ActionBarActivity {
+public class AddressInfoEditActivity extends ActionBarActivity implements AlertDialogListener {
+    private static final int DIALOG_DELETE = 0;
+
     @InjectView(R.id.txtContactDisplayName)
     protected TextView mTxtContactDisplayName;
 
@@ -299,6 +303,14 @@ public class AddressInfoEditActivity extends ActionBarActivity {
     }
 
     private void onDeleteClicked() {
+        AlertDialogFragment alertDialogFragment = AlertDialogFragment.newInstance(DIALOG_DELETE);
+        alertDialogFragment.setMessage(R.string.common_confirm_delete);
+        alertDialogFragment.setNegativeButton(android.R.string.cancel);
+        alertDialogFragment.setPositiveButton(android.R.string.ok);
+        alertDialogFragment.show(getSupportFragmentManager());
+    }
+
+    private void delete() {
         new TaskFragment(new Task<AddressInfoEditActivity>() {
             @Override
             protected void doInBackground() throws Throwable {
@@ -311,5 +323,23 @@ public class AddressInfoEditActivity extends ActionBarActivity {
                 getActivity().finish();
             }
         }).execute(getSupportFragmentManager());
+    }
+
+
+    /*
+     * AlertDialogListener implementation.
+     */
+
+    @Override
+    public void onClickPositive(int tag, Object payload) {
+        delete();
+    }
+
+    @Override
+    public void onClickNegative(int tag, Object payload) {
+    }
+
+    @Override
+    public void onClickListItem(int tag, int index, Object payload) {
     }
 }

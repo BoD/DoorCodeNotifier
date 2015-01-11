@@ -111,6 +111,7 @@ public class GeofencingHelper {
     public void removeAllGeofences() {
         Log.d();
         LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, getPendingIntent()).await();
+        Log.d("All geofences removed");
     }
 
     @Background(Background.Type.NETWORK)
@@ -119,6 +120,7 @@ public class GeofencingHelper {
         GeofencingRequest.Builder requestBuilder = new GeofencingRequest.Builder();
         requestBuilder.addGeofences(geofenceList);
         LocationServices.GeofencingApi.addGeofences(mGoogleApiClient, requestBuilder.build(), getPendingIntent()).await();
+        Log.d(geofenceList.size() + " geofences added");
     }
 
     private PendingIntent getPendingIntent() {

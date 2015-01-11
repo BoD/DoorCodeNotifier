@@ -70,6 +70,7 @@ public class GeofencingService extends IntentService {
                 }
             }
             if (addressInfo == null) {
+                // Can happen if the AddressInfo has been deleted, and the geofences were not refreshed (maybe after a contact sync?)
                 Log.w("The geofence id does not match any AddressInfo: ignore");
                 return;
             }
