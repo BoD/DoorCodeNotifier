@@ -7,7 +7,8 @@
 
 
     <string name="action_add">Add</string>
-    <string name="menu_done">Done</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_done">Done</string>
 
     <string name="addressInfo_list_code">Code #%1$d</string>
     <string name="addressInfo_list_chooseAddress">Which address?</string>
@@ -20,6 +21,7 @@
     <string name="addressInfo_edit_otherInfo_hint">Other information (e.g. floor)</string>
     <string name="addressInfo_edit_addCode">Add code</string>
     <string name="addressInfo_edit_formattedAddress_hint">Postal address</string>
+
 
 
 </resources>

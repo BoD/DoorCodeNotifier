@@ -137,4 +137,14 @@ public class AddressInfo {
         int res = context.getContentResolver().update(uri, contentValues, null, null);
         Log.d("res=" + res);
     }
+
+    public void delete(Context context) {
+        Log.d();
+        // Persist
+        ContentValues contentValues = new ContentValues(1);
+        contentValues.put(ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, formattedAddress);
+
+        int res = context.getContentResolver().update(uri, contentValues, null, null);
+        Log.d("res=" + res);
+    }
 }

@@ -75,7 +75,6 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu items for use in the action bar
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.addressinfo_list, menu);
         return super.onCreateOptionsMenu(menu);

@@ -11,6 +11,9 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -76,6 +79,25 @@ public class AddressInfoEditActivity extends ActionBarActivity {
 
         mAddressUri = getIntent().getData();
         loadData();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.addressinfo_edit, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_delete:
+                onDeleteClicked();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void loadData() {
@@ -267,6 +289,21 @@ public class AddressInfoEditActivity extends ActionBarActivity {
                 a.mAddressInfo.latitude = address.getLatitude();
                 a.mAddressInfo.longitude = address.getLongitude();
                 a.mAddressInfo.persist(a);
+            }
+
+            @Override
+            protected void onPostExecuteOk() {
+                getActivity().finish();
+            }
+        }).execute(getSupportFragmentManager());
+    }
+
+    private void onDeleteClicked() {
+        new TaskFragment(new Task<AddressInfoEditActivity>() {
+            @Override
+            protected void doInBackground() throws Throwable {
+                AddressInfoEditActivity a = getActivity();
+                a.mAddressInfo.delete(a);
             }
 
             @Override
