@@ -6,3 +6,6 @@
 /build
 digibod.iml
 .idea
+build.properties
+crashlytics.properties
+com_crashlytics_export_strings.xml

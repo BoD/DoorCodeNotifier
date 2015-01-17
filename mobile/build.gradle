@@ -1,8 +1,9 @@
 apply plugin: 'com.android.application'
+apply plugin: 'io.fabric'
 
 android {
     compileSdkVersion 21
-    buildToolsVersion "21.1.1"
+    buildToolsVersion "21.1.2"
 
     defaultConfig {
         applicationId "org.jraf.android.digibod"
@@ -10,7 +11,11 @@ android {
         targetSdkVersion 21
         versionCode 1
         versionName "1.0"
+
+        // For now we enable strict mode for all the configs
+        buildConfigField 'boolean', 'STRICT_MODE', 'true'
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -29,4 +34,5 @@ dependencies {
     compile 'com.jakewharton:butterknife:6.0.0'
     compile 'com.squareup.picasso:picasso:2.4.0'
     compile 'com.google.android.gms:play-services-location:6.5.87'
+    compile 'com.crashlytics.sdk.android:crashlytics:2.2.0'
 }
