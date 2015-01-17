@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 public class AddressInfo {
     public static final String SEPARATOR = "\n--\n";
     private static final Pattern PATTERN_CODE = Pattern.compile("Code( \\d+)?: (.+)");
-    private static final Pattern PATTERN_COORDINATES = Pattern.compile("Coordinates: (\\d+), (\\d+)");
+    private static final Pattern PATTERN_COORDINATES = Pattern.compile("Coordinates: (-?\\d+), (-?\\d+)");
 
     public ContactInfo contactInfo = new ContactInfo();
     public Uri uri;

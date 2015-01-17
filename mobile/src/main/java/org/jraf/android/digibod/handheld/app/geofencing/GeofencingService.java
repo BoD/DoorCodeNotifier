@@ -106,7 +106,8 @@ public class GeofencingService extends IntentService {
         Geofence.Builder geofenceBuilder = new Geofence.Builder();
         geofenceBuilder.setRequestId(addressInfo.uri.toString());
         geofenceBuilder.setExpirationDuration(Geofence.NEVER_EXPIRE);
-        geofenceBuilder.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT | Geofence.GEOFENCE_TRANSITION_DWELL); // TODO remove this because we don't really want dwell
+        geofenceBuilder.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT |
+                Geofence.GEOFENCE_TRANSITION_DWELL); // TODO remove this because we don't really want dwell
         geofenceBuilder.setNotificationResponsiveness(NOTIFICATION_RESPONSIVENESS_MS);
         geofenceBuilder.setCircularRegion(addressInfo.latitude, addressInfo.longitude, RADIUS_M);
         geofenceBuilder.setLoiteringDelay(1000); // TODO remove this because we don't really want dwell
@@ -172,5 +173,12 @@ public class GeofencingService extends IntentService {
         Log.d();
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(NOTIFICATION_ID);
+    }
+
+    public static void refresh(Context context) {
+        Log.d();
+        Intent intent = new Intent(context, GeofencingService.class);
+        intent.setAction(ACTION_REFRESH_GEOFENCES);
+        context.startService(intent);
     }
 }

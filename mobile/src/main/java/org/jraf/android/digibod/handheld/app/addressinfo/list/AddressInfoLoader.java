@@ -2,7 +2,6 @@ package org.jraf.android.digibod.handheld.app.addressinfo.list;
 
 import android.content.ContentUris;
 import android.content.Context;
-import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
@@ -123,9 +122,7 @@ public class AddressInfoLoader extends AsyncTaskLoader<List<AddressInfo>> {
     public void onContentChanged() {
         Log.d();
         super.onContentChanged();
-        Intent intent = new Intent(getContext(), GeofencingService.class);
-        intent.setAction(GeofencingService.ACTION_REFRESH_GEOFENCES);
-        getContext().startService(intent);
+        GeofencingService.refresh(getContext());
     }
 
     @Override

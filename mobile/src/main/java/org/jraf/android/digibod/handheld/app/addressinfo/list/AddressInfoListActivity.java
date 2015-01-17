@@ -312,9 +312,7 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
     private void onGeotrackingCheckedChanged(boolean isChecked) {
         SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
         preferenceManager.edit().putBoolean(Constants.PREF_GEOFENCING_ENABLED, isChecked).commit();
-        Intent intent = new Intent(this, GeofencingService.class);
-        intent.setAction(GeofencingService.ACTION_REFRESH_GEOFENCES);
-        startService(intent);
+        GeofencingService.refresh(this);
     }
 
 }

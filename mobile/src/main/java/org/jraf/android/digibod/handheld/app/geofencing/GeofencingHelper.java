@@ -117,6 +117,10 @@ public class GeofencingHelper {
     @Background(Background.Type.NETWORK)
     public void addGeofences(List<Geofence> geofenceList) {
         Log.d();
+        if (geofenceList.isEmpty()) {
+            Log.d("List of geofences is empty: do nothing");
+            return;
+        }
         GeofencingRequest.Builder requestBuilder = new GeofencingRequest.Builder();
         requestBuilder.addGeofences(geofenceList);
         LocationServices.GeofencingApi.addGeofences(mGoogleApiClient, requestBuilder.build(), getPendingIntent()).await();
