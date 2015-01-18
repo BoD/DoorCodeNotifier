@@ -115,6 +115,7 @@ public class AddressInfoEditActivity extends ActionBarActivity implements AlertD
                         ContactsContract.Data.CONTACT_ID, // 0
                         ContactsContract.Contacts.DISPLAY_NAME, // 1
                         ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, // 2
+                        ContactsContract.Contacts.LOOKUP_KEY, // 3
                 };
                 Cursor c = a.getContentResolver().query(addressUri, projection, null, null, null);
                 if (c.moveToNext()) {
@@ -130,6 +131,7 @@ public class AddressInfoEditActivity extends ActionBarActivity implements AlertD
                     }
                     addressInfo.uri = addressUri;
                     addressInfo.contactInfo.uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, c.getLong(0));
+                    addressInfo.contactInfo.contentLookupUri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_LOOKUP_URI, c.getString(3));
                     addressInfo.contactInfo.displayName = c.getString(1);
 
                     a.mAddressInfo = addressInfo;
@@ -271,14 +273,14 @@ public class AddressInfoEditActivity extends ActionBarActivity implements AlertD
         mAddressInfo.codeList = codeList;
 
         // Other info
-        mAddressInfo.otherInfo = mEdtOtherInfo.getText().toString();
+        mAddressInfo.otherInfo = mEdtOtherInfo.getText().toString().trim();
 
         new TaskFragment(new Task<AddressInfoEditActivity>() {
             @Override
             protected void doInBackground() throws Throwable {
                 AddressInfoEditActivity a = getActivity();
 
-                a.mAddressInfo.formattedAddress = a.mEdtFormattedAddress.getText().toString();
+                a.mAddressInfo.formattedAddress = a.mEdtFormattedAddress.getText().toString().trim();
 
                 // Geocoding
                 Log.d("Geocoding...");

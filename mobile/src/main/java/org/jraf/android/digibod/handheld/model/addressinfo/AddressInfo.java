@@ -81,6 +81,7 @@ public class AddressInfo {
         // Other info (optional)
         if (sourceElements.length > 2) {
             res.otherInfo = sourceElements[2];
+            if (res.otherInfo.trim().isEmpty()) res.otherInfo = null;
         }
 
         if (!foundCoordinates) {

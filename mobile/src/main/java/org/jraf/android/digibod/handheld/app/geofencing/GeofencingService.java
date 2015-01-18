@@ -6,7 +6,13 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.provider.ContactsContract;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 
 import com.google.android.gms.location.Geofence;
@@ -16,6 +22,7 @@ import org.jraf.android.digibod.R;
 import org.jraf.android.digibod.handheld.Constants;
 import org.jraf.android.digibod.handheld.app.addressinfo.list.AddressInfoLoader;
 import org.jraf.android.digibod.handheld.model.addressinfo.AddressInfo;
+import org.jraf.android.util.annotation.Background;
 import org.jraf.android.util.log.wrapper.Log;
 import org.jraf.android.util.string.StringUtil;
 
@@ -126,13 +133,23 @@ public class GeofencingService extends IntentService {
 
     private void showEnteredNotification(AddressInfo addressInfo) {
         Log.d("addressInfo=" + addressInfo);
-        Notification.Builder mainNotifBuilder = new Notification.Builder(this);
+        NotificationCompat.Builder mainNotifBuilder = new NotificationCompat.Builder(this);
         mainNotifBuilder.setSmallIcon(R.drawable.ic_stat_entered); // TODO a real icon
-        mainNotifBuilder.setContentTitle(getString(R.string.app_name));
-        String notificationText = getNotificationText(addressInfo);
-        mainNotifBuilder.setTicker(notificationText);
-        mainNotifBuilder.setContentText(notificationText);
-        mainNotifBuilder.setPriority(NotificationCompat.PRIORITY_HIGH);
+        String title = getNotificationTitle(addressInfo);
+        String textSmall = getNotificationText(addressInfo, false);
+        String textBig = getNotificationText(addressInfo, true);
+        mainNotifBuilder.setContentTitle(title);
+        mainNotifBuilder.setTicker(title);
+        mainNotifBuilder.setContentText(textSmall);
+        mainNotifBuilder.setStyle(new NotificationCompat.BigTextStyle().bigText(textBig));
+        mainNotifBuilder.setPriority(NotificationCompat.PRIORITY_HIGH); // Time sensitive, try to appear on top
+        mainNotifBuilder.setCategory(NotificationCompat.CATEGORY_STATUS); // Not sure if this category is really the most appropriate
+        mainNotifBuilder.setLights(0, 0, 0); // No light
+        mainNotifBuilder.setShowWhen(false); // No date
+        mainNotifBuilder.addPerson(addressInfo.contactInfo.contentLookupUri.toString());
+        // Contact photo
+        Bitmap contactPhoto = getContactPhoto(addressInfo.contactInfo.uri);
+        if (contactPhoto != null) mainNotifBuilder.setLargeIcon(contactPhoto);
 
 //        // Go to the AddressInfo's edit activity
 //        TaskStackBuilder taskStackBuilder = TaskStackBuilder.create(this);
@@ -142,31 +159,63 @@ public class GeofencingService extends IntentService {
 //        mainNotifBuilder.setContentIntent(taskStackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
         mainNotifBuilder.setAutoCancel(true);
 
-        Notification notification = mainNotifBuilder.getNotification();
+        Notification notification = mainNotifBuilder.build();
 
         // Default vibration
-        notification.defaults |= Notification.DEFAULT_VIBRATE;
+        notification.defaults |= Notification.DEFAULT_VIBRATE; // TODO remove
 
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(NOTIFICATION_ID, notification);
     }
 
-    private String getNotificationText(AddressInfo addressInfo) {
-        String res = addressInfo.contactInfo.displayName;
-        if (!addressInfo.codeList.isEmpty()) {
-            res += " - ";
-            int i = 0;
-            for (String code : addressInfo.codeList) {
-                if (i > 0) res += " / ";
-                res += code;
-                i++;
+    private String getNotificationTitle(AddressInfo addressInfo) {
+        if (addressInfo.codeList.isEmpty()) {
+            if (addressInfo.otherInfo == null) {
+                return addressInfo.contactInfo.displayName;
             }
+            return addressInfo.otherInfo;
         }
-        if (addressInfo.otherInfo != null) {
-            res += " - " + addressInfo.otherInfo;
+        String res = "";
+        int i = 0;
+        for (String code : addressInfo.codeList) {
+            if (i > 0) res += " ‒ ";
+            res += code;
+            i++;
         }
 
         return res;
+    }
+
+    private String getNotificationText(AddressInfo addressInfo, boolean big) {
+        if (addressInfo.codeList.isEmpty()) {
+            if (addressInfo.otherInfo == null) {
+                return null;
+            }
+            return addressInfo.contactInfo.displayName;
+        }
+        if (addressInfo.otherInfo == null) {
+            return addressInfo.contactInfo.displayName;
+        }
+        String separator = big ? "\n" : " — ";
+        return addressInfo.otherInfo + separator + addressInfo.contactInfo.displayName;
+    }
+
+    @Nullable
+    @Background(Background.Type.DISK)
+    private Bitmap getContactPhoto(Uri contactUri) {
+        Uri photoUri = Uri.withAppendedPath(contactUri, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
+        String[] projection = {ContactsContract.Contacts.Photo.PHOTO};
+        Cursor cursor = getContentResolver().query(photoUri, projection, null, null, null);
+        if (cursor == null) return null;
+        try {
+            if (cursor.moveToFirst()) {
+                byte[] data = cursor.getBlob(0);
+                if (data != null) return BitmapFactory.decodeByteArray(data, 0, data.length);
+            }
+        } finally {
+            cursor.close();
+        }
+        return null;
     }
 
     private void dismissNotification() {

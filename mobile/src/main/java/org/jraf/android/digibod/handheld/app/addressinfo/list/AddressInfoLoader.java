@@ -54,6 +54,7 @@ public class AddressInfoLoader extends AsyncTaskLoader<List<AddressInfo>> {
 
         addressInfo.uri = structuredPostalUri;
         addressInfo.contactInfo.uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, cursor.getLong(0));
+        addressInfo.contactInfo.contentLookupUri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_LOOKUP_URI, cursor.getString(4));
         addressInfo.contactInfo.displayName = cursor.getString(1);
         return addressInfo;
     }
@@ -64,6 +65,7 @@ public class AddressInfoLoader extends AsyncTaskLoader<List<AddressInfo>> {
                 ContactsContract.Contacts.DISPLAY_NAME, // 1
                 ContactsContract.Data._ID, // 2
                 ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, // 3
+                ContactsContract.Contacts.LOOKUP_KEY, // 4
         };
         String selection =
                 ContactsContract.Contacts.Data.MIMETYPE + "=? AND " + ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS + " LIKE ?";
