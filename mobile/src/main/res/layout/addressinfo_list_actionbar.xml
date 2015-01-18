@@ -10,12 +10,11 @@
     <android.support.v7.widget.SwitchCompat
         android:id="@+id/swiGeofencing"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="8dip"
-        android:layout_marginRight="8dip"
-        android:text="@string/addressInfo_list_geofencing"
-        android:textColor="#FFF"
-        app:switchPadding="4dp"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:thumb="@drawable/switch_thumb"
+        app:track="@drawable/switch_track"
         />
 
 
