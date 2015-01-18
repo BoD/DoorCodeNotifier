@@ -14,6 +14,8 @@
     <string name="addressInfo_list_chooseAddress">Which address?</string>
     <string name="addressInfo_list_add">Add</string>
     <string name="addressInfo_list_geofencing">Track location</string>
+    <string name="addressInfo_list_geotrackingOn">Location tracking is ON</string>
+    <string name="addressInfo_list_geotrackingOff">Location tracking is OFF</string>
 
     <string name="addressInfo_edit_loadError">Could not load this address</string>
     <string name="addressInfo_edit_title">Address information</string>

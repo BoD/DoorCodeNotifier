@@ -25,8 +25,6 @@ import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.Toast;
 
-import com.crashlytics.android.Crashlytics;
-
 import org.jraf.android.digibod.R;
 import org.jraf.android.digibod.handheld.Constants;
 import org.jraf.android.digibod.handheld.app.addressinfo.edit.AddressInfoEditActivity;
@@ -43,7 +41,6 @@ import java.util.ArrayList;
 
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.fabric.sdk.android.Fabric;
 
 
 public class AddressInfoListActivity extends ActionBarActivity implements AlertDialogListener, AddressInfoCallbacks {
@@ -316,6 +313,7 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
         SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
         preferenceManager.edit().putBoolean(Constants.PREF_GEOFENCING_ENABLED, isChecked).commit();
         GeofencingService.refresh(this);
+        Toast.makeText(this, isChecked ? R.string.addressInfo_list_geotrackingOn : R.string.addressInfo_list_geotrackingOff, Toast.LENGTH_SHORT).show();
     }
 
 }
