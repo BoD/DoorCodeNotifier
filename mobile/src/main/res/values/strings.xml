@@ -23,6 +23,8 @@
     <string name="addressInfo_edit_otherInfo_hint">Other information (e.g. floor)</string>
     <string name="addressInfo_edit_addCode">Add code</string>
     <string name="addressInfo_edit_formattedAddress_hint">Postal address</string>
+    <string name="addressInfo_edit_couldNotGeocode">Could not locate the address</string>
+    <string name="addressInfo_edit_emptyAddress">This field must not be empty</string>
 
     <string name="notification_action_call">Call</string>
     <string name="notification_action_sms">Text</string>

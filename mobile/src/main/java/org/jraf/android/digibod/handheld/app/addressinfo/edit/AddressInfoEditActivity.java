@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -19,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
@@ -275,20 +277,27 @@ public class AddressInfoEditActivity extends ActionBarActivity implements AlertD
         // Other info
         mAddressInfo.otherInfo = mEdtOtherInfo.getText().toString().trim();
 
+        // Formatted address
+        final String formattedAddress = mEdtFormattedAddress.getText().toString().trim();
+        mAddressInfo.formattedAddress = formattedAddress;
+        // Disallow empty address
+        if (TextUtils.isEmpty(formattedAddress)) {
+            mEdtFormattedAddress.setError(getString(R.string.addressInfo_edit_emptyAddress));
+            return;
+        }
+
         new TaskFragment(new Task<AddressInfoEditActivity>() {
             @Override
             protected void doInBackground() throws Throwable {
                 AddressInfoEditActivity a = getActivity();
 
-                a.mAddressInfo.formattedAddress = a.mEdtFormattedAddress.getText().toString().trim();
-
                 // Geocoding
                 Log.d("Geocoding...");
                 Geocoder geocoder = new Geocoder(a);
-                List<Address> addressList = geocoder.getFromLocationName(a.mAddressInfo.formattedAddress, 1);
+                List<Address> addressList = geocoder.getFromLocationName(formattedAddress, 1);
                 Log.d("addressList=" + addressList);
                 if (addressList == null || addressList.isEmpty()) {
-                    // TODO Handle error
+                    Log.w("Could not geocode address '" + formattedAddress + "'");
                     throw new Exception("Could not geocode");
                 }
                 Address address = addressList.get(0);
@@ -300,6 +309,13 @@ public class AddressInfoEditActivity extends ActionBarActivity implements AlertD
             @Override
             protected void onPostExecuteOk() {
                 getActivity().finish();
+            }
+
+            @Override
+            protected void onPostExecuteFail() {
+                AddressInfoEditActivity a = getActivity();
+                Toast.makeText(a, R.string.addressInfo_edit_couldNotGeocode, Toast.LENGTH_LONG).show();
+                a.mEdtFormattedAddress.setError(a.getString(R.string.addressInfo_edit_couldNotGeocode));
             }
         }).execute(getSupportFragmentManager());
     }

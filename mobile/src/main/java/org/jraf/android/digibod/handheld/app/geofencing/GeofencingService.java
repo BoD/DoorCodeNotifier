@@ -30,8 +30,9 @@ import java.util.List;
 
 public class GeofencingService extends IntentService {
     public static final String ACTION_REFRESH_GEOFENCES = "ACTION_REFRESH_GEOFENCES";
-    private static final int NOTIFICATION_RESPONSIVENESS_MS = 5 * 1000;
+    private static final int NOTIFICATION_RESPONSIVENESS_MS = 5 * 1000; // 4 seconds
     private static final float RADIUS_M = 200;
+    private static final int DISMISS_TIMEOUT_MS = 6 * 60 * 1000; // 6 minutes
     private static final int NOTIFICATION_ID = 1;
 
     public GeofencingService() {
@@ -83,11 +84,11 @@ public class GeofencingService extends IntentService {
 
             switch (geofencingEvent.getGeofenceTransition()) {
                 case Geofence.GEOFENCE_TRANSITION_ENTER:
-                case Geofence.GEOFENCE_TRANSITION_DWELL:
                     showEnteredNotification(addressInfo);
                     break;
 
                 case Geofence.GEOFENCE_TRANSITION_EXIT:
+                case Geofence.GEOFENCE_TRANSITION_DWELL:
                     dismissNotification();
                     break;
             }
@@ -113,10 +114,10 @@ public class GeofencingService extends IntentService {
         geofenceBuilder.setRequestId(addressInfo.uri.toString());
         geofenceBuilder.setExpirationDuration(Geofence.NEVER_EXPIRE);
         geofenceBuilder.setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT |
-                Geofence.GEOFENCE_TRANSITION_DWELL); // TODO remove this because we don't really want dwell
+                Geofence.GEOFENCE_TRANSITION_DWELL);
         geofenceBuilder.setNotificationResponsiveness(NOTIFICATION_RESPONSIVENESS_MS);
         geofenceBuilder.setCircularRegion(addressInfo.latitude, addressInfo.longitude, RADIUS_M);
-        geofenceBuilder.setLoiteringDelay(1000); // TODO remove this because we don't really want dwell
+        geofenceBuilder.setLoiteringDelay(DISMISS_TIMEOUT_MS);
         return geofenceBuilder.build();
     }
 
