@@ -9,17 +9,29 @@ android {
         applicationId "org.jraf.android.dcn"
         minSdkVersion 15
         targetSdkVersion 21
-        versionCode 1
-        versionName "1.0"
+        versionCode buildNumber
+        versionName buildProperties['versionName']
+        resConfigs "en", "fr"
 
         // For now we enable strict mode for all the configs
         buildConfigField 'boolean', 'STRICT_MODE', 'true'
     }
 
+    signingConfigs {
+        release {
+            storeFile file(buildProperties['key-store'])
+            storePassword buildProperties['key-store-password']
+            keyAlias buildProperties['key-alias']
+            keyPassword buildProperties['key-alias-password']
+        }
+    }
+
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 }
@@ -36,4 +48,35 @@ dependencies {
     compile 'com.squareup.picasso:picasso:2.4.0'
     compile 'com.google.android.gms:play-services-location:6.5.87'
     compile 'com.crashlytics.sdk.android:crashlytics:2.2.0'
+}
+
+task deploy(dependsOn: assembleRelease) << {
+    description 'Build a release apk, copy the result to the deploy and \'etc\' folders, then increment the build number.'
+
+    // Copy the apk to the 'etc' folder
+    new File('etc/apk').mkdirs()
+    copy {
+        from buildDir.getPath() + "/outputs/apk/${project.name}-release.apk"
+        into '../etc/apk'
+        rename "${project.name}-release.apk", "${globalProjectName}-${android.defaultConfig.versionCode}-signed.apk"
+    }
+
+    // Also copy the apk to the deploy folder
+    copy {
+        from buildDir.getPath() + "/outputs/apk/${project.name}-release.apk"
+        into buildProperties['deploy-folder']
+        rename "${project.name}-release.apk", "${globalProjectName}-${android.defaultConfig.versionCode}-signed.apk"
+    }
+
+    // Copy the proguard mapping to the 'etc' folder
+    new File('etc/proguard').mkdirs()
+    copy {
+        from buildDir.getPath() + '/outputs/mapping/release/mapping.txt'
+        into '../etc/proguard'
+        rename 'mapping.txt', "mapping-${android.defaultConfig.versionCode}.txt"
+    }
+
+    // Increment build number
+    buildNumberProperties['build.number'] = (buildNumber + 1).toString()
+    buildNumberProperties.store(buildNumberFile.newWriter(), null)
 }

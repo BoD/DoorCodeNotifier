@@ -30,7 +30,7 @@ import android.os.StrictMode;
 import com.crashlytics.android.Crashlytics;
 
 import org.jraf.android.dcn.BuildConfig;
-import org.jraf.android.util.Constants;
+import org.jraf.android.dcn.handheld.Constants;
 import org.jraf.android.util.log.wrapper.Log;
 
 import io.fabric.sdk.android.Fabric;

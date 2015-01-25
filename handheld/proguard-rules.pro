@@ -1,6 +1,7 @@
 # OkHttp
 -dontwarn com.squareup.okhttp.**
 
+
 # Google Play Services
 -keep class * extends java.util.ListResourceBundle {
     protected Object[][] getContents();
@@ -16,4 +17,9 @@
     public static final ** CREATOR;
 }
 
+
+# Butterknife
+-dontwarn butterknife.internal.**
+-keep class **$$ViewInjector { *; }
+-keepnames class * { @butterknife.InjectView *;}
 

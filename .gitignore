@@ -9,3 +9,5 @@ dcn.iml
 build.properties
 crashlytics.properties
 com_crashlytics_export_strings.xml
+etc/apk
+etc/proguard
