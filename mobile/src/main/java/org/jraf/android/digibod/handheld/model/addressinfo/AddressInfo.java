@@ -2,6 +2,9 @@ package org.jraf.android.digibod.handheld.model.addressinfo;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
@@ -147,5 +150,41 @@ public class AddressInfo {
 
         int res = context.getContentResolver().update(uri, contentValues, null, null);
         Log.d("res=" + res);
+    }
+
+    @Nullable
+    @Background(Background.Type.DISK)
+    public Bitmap getContactPhoto(Context context) {
+        Uri photoUri = Uri.withAppendedPath(contactInfo.uri, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
+        String[] projection = {ContactsContract.Contacts.Photo.PHOTO};
+        Cursor cursor = context.getContentResolver().query(photoUri, projection, null, null, null);
+        if (cursor == null) return null;
+        try {
+            if (cursor.moveToFirst()) {
+                byte[] data = cursor.getBlob(0);
+                if (data != null) return BitmapFactory.decodeByteArray(data, 0, data.length);
+            }
+        } finally {
+            cursor.close();
+        }
+        return null;
+    }
+
+    @Nullable
+    @Background(Background.Type.DISK)
+    public String getContactPhoneNumber(Context context) {
+        Uri dataUri = Uri.withAppendedPath(contactInfo.uri, ContactsContract.Contacts.Data.CONTENT_DIRECTORY);
+        String[] projection = {ContactsContract.CommonDataKinds.Phone.NUMBER};
+        String sort = ContactsContract.Contacts.Data.IS_SUPER_PRIMARY + " DESC," + ContactsContract.Contacts.Data.IS_PRIMARY + " DESC";
+        String selection = ContactsContract.Contacts.Data.MIMETYPE + "=?";
+        String[] selectionArgs = {ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE};
+        Cursor cursor = context.getContentResolver().query(dataUri, projection, selection, selectionArgs, sort);
+        if (cursor == null) return null;
+        try {
+            if (cursor.moveToFirst()) return cursor.getString(0);
+        } finally {
+            cursor.close();
+        }
+        return null;
     }
 }

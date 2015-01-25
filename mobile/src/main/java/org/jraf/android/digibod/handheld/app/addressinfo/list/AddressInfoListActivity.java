@@ -185,7 +185,7 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
                         a.startAddressInfoEditActivity(structuredPostal.uri);
                     }
                 } else {
-                    // The selected contact has several addresses: ask the user which one he wants to edit
+                    // The selected contact has several addresses: ask the user which one they want to edit
                     a.chooseAddressToEdit(contactId, structuredPostalList);
                 }
             }
@@ -293,6 +293,7 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
                 long contactId = payloadBundle.getLong("contactId");
                 Uri chosenUri = (Uri) uris.get(index);
                 Log.d("contactId=" + contactId + " chosenUri=" + chosenUri);
+                startAddressInfoEditActivity(chosenUri);
                 break;
         }
     }

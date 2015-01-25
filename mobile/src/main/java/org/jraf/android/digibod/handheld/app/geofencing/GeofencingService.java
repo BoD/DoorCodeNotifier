@@ -3,17 +3,17 @@ package org.jraf.android.digibod.handheld.app.geofencing;
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.provider.ContactsContract;
-import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.TextAppearanceSpan;
 
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
@@ -22,7 +22,6 @@ import org.jraf.android.digibod.R;
 import org.jraf.android.digibod.handheld.Constants;
 import org.jraf.android.digibod.handheld.app.addressinfo.list.AddressInfoLoader;
 import org.jraf.android.digibod.handheld.model.addressinfo.AddressInfo;
-import org.jraf.android.util.annotation.Background;
 import org.jraf.android.util.log.wrapper.Log;
 import org.jraf.android.util.string.StringUtil;
 
@@ -136,9 +135,16 @@ public class GeofencingService extends IntentService {
         NotificationCompat.Builder mainNotifBuilder = new NotificationCompat.Builder(this);
         mainNotifBuilder.setSmallIcon(R.drawable.ic_stat_entered); // TODO a real icon
         String title = getNotificationTitle(addressInfo);
+
         String textSmall = getNotificationText(addressInfo, false);
         String textBig = getNotificationText(addressInfo, true);
-        mainNotifBuilder.setContentTitle(title);
+
+        // Make a bigger title
+        SpannableString titleSpannable = new SpannableString(title);
+        Object span = new TextAppearanceSpan(this, R.style.NotificationContentTitleTextAppearance);
+        titleSpannable.setSpan(span, 0, title.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        mainNotifBuilder.setContentTitle(titleSpannable);
+
         mainNotifBuilder.setTicker(title);
         mainNotifBuilder.setContentText(textSmall);
         mainNotifBuilder.setStyle(new NotificationCompat.BigTextStyle().bigText(textBig));
@@ -148,7 +154,7 @@ public class GeofencingService extends IntentService {
         mainNotifBuilder.setShowWhen(false); // No date
         mainNotifBuilder.addPerson(addressInfo.contactInfo.contentLookupUri.toString());
         // Contact photo
-        Bitmap contactPhoto = getContactPhoto(addressInfo.contactInfo.uri);
+        Bitmap contactPhoto = addressInfo.getContactPhoto(this);
         if (contactPhoto != null) mainNotifBuilder.setLargeIcon(contactPhoto);
 
 //        // Go to the AddressInfo's edit activity
@@ -157,10 +163,47 @@ public class GeofencingService extends IntentService {
 //        Intent intent = new Intent(this, AddressInfoEditActivity.class).setData(addressInfo.uri);
 //        taskStackBuilder.addNextIntent(intent);
 //        mainNotifBuilder.setContentIntent(taskStackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
+
+        // Auto cancel
         mainNotifBuilder.setAutoCancel(true);
 
-        Notification notification = mainNotifBuilder.build();
+        // Main action (click on the notification itself)
+        Intent mainIntent = new Intent(Intent.ACTION_VIEW);
+        mainIntent.setData(addressInfo.contactInfo.contentLookupUri);
+        PendingIntent mainPendingIntent = PendingIntent.getActivity(this, 0, mainIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        mainNotifBuilder.setContentIntent(mainPendingIntent);
 
+        String phoneNumber = addressInfo.getContactPhoneNumber(this);
+        if (phoneNumber != null) {
+            // Call action
+            Intent callIntent = new Intent(Intent.ACTION_DIAL);
+            callIntent.setData(Uri.parse("tel:" + phoneNumber));
+            PendingIntent callPendingIntent = PendingIntent.getActivity(this, 0, callIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            String callText = getString(R.string.notification_action_call);
+
+            // Sms action
+            Intent smsIntent = new Intent(Intent.ACTION_VIEW);
+            smsIntent.setData(Uri.parse("sms:" + phoneNumber));
+            smsIntent.putExtra("sms_body", getString(R.string.notification_action_sms_body));
+            PendingIntent smsPendingIntent = PendingIntent.getActivity(this, 0, smsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            String smsText = getString(R.string.notification_action_sms);
+
+            // Handheld
+            mainNotifBuilder.addAction(R.drawable.ic_action_call, callText, callPendingIntent);
+            mainNotifBuilder.addAction(R.drawable.ic_action_sms, smsText, smsPendingIntent);
+
+            // Wearable (we need to do that to have specific 'full' icons on wearables)
+            NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender();
+            wearableExtender.addAction(new NotificationCompat.Action(R.drawable.ic_action_call_full, callText, callPendingIntent));
+            wearableExtender.addAction(new NotificationCompat.Action(R.drawable.ic_action_sms_full, smsText, smsPendingIntent));
+
+            // Could be useful
+            wearableExtender.setHintScreenTimeout(NotificationCompat.WearableExtender.SCREEN_TIMEOUT_LONG);
+
+            mainNotifBuilder.extend(wearableExtender);
+        }
+
+        Notification notification = mainNotifBuilder.build();
         // Default vibration
         notification.defaults |= Notification.DEFAULT_VIBRATE; // TODO remove
 
@@ -198,24 +241,6 @@ public class GeofencingService extends IntentService {
         }
         String separator = big ? "\n" : " — ";
         return addressInfo.otherInfo + separator + addressInfo.contactInfo.displayName;
-    }
-
-    @Nullable
-    @Background(Background.Type.DISK)
-    private Bitmap getContactPhoto(Uri contactUri) {
-        Uri photoUri = Uri.withAppendedPath(contactUri, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
-        String[] projection = {ContactsContract.Contacts.Photo.PHOTO};
-        Cursor cursor = getContentResolver().query(photoUri, projection, null, null, null);
-        if (cursor == null) return null;
-        try {
-            if (cursor.moveToFirst()) {
-                byte[] data = cursor.getBlob(0);
-                if (data != null) return BitmapFactory.decodeByteArray(data, 0, data.length);
-            }
-        } finally {
-            cursor.close();
-        }
-        return null;
     }
 
     private void dismissNotification() {

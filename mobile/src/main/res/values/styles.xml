@@ -16,4 +16,10 @@
         <item name="android:textSize">14sp</item>
         <item name="android:textStyle">bold</item>
     </style>
+
+    <style name="NotificationContentTitleTextAppearance" >
+        <item name="android:textSize">28sp</item>
+        <!--<item name="android:textColor">@color/notif_content_title</item>-->
+    </style>
+
 </resources>
