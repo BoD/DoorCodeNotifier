@@ -1,10 +1,10 @@
 Door Code Notifier
 ==================
 
-An Android app that notifies you when you're near a friend's place, and shows you their door code.
+An Android app that notifies you when you're near a friend's place, to show you their door code.
 
 No longer will you have to look for the code, or call your friend: the information will automatically come
-to you when and where you need it!
+to you when and where you need it!  The notification also presents handy 'Text' and 'Call' quick actions.
 
 This app is compatible and works well with Android Wear.
 
