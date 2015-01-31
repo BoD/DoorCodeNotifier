@@ -73,8 +73,9 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
     private static final int REQUEST_CONTACT_PICK = 0;
     private static final int DIALOG_CHOOSE_ADDRESS_TO_EDIT = 0;
 
-    @InjectView(R.id.conGeotrackingDisabled)
-    protected View mConGeotrackingDisabled;
+    @InjectView(R.id.conFencingDisabled)
+    protected View mConGeofencingDisabled;
+    private SwitchCompat mSwiGeofencing;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,20 +86,16 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
         // Custom action bar that contains the "done" button for saving changes
         ActionBar actionBar = getSupportActionBar();
         @SuppressLint("InflateParams") View customActionBarView = getLayoutInflater().inflate(R.layout.addressinfo_list_actionbar, null);
-        SwitchCompat swiGeotracking = (SwitchCompat) customActionBarView.findViewById(R.id.swiGeofencing);
+        mSwiGeofencing = (SwitchCompat) customActionBarView.findViewById(R.id.swiGeofencing);
+        // Check it if enabled in prefs
         SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
         boolean enabled = preferenceManager.getBoolean(Constants.PREF_GEOFENCING_ENABLED, Constants.PREF_GEOFENCING_ENABLED_DEFAULT);
-        swiGeotracking.setChecked(enabled);
-        swiGeotracking.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                onGeotrackingCheckedChanged(isChecked);
-            }
-        });
+        mSwiGeofencing.setChecked(enabled);
+        // Show disabled indicator if needed
         if (enabled) {
-            mConGeotrackingDisabled.setVisibility(View.GONE);
+            mConGeofencingDisabled.setVisibility(View.GONE);
         } else {
-            mConGeotrackingDisabled.setVisibility(View.VISIBLE);
+            mConGeofencingDisabled.setVisibility(View.VISIBLE);
         }
         actionBar.setDisplayShowCustomEnabled(true);
         actionBar.setCustomView(customActionBarView, new ActionBar.LayoutParams(Gravity.CENTER_VERTICAL | Gravity.RIGHT));
@@ -186,9 +183,7 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
                 }
 
                 // 2/ Find addresses for this contact
-                ArrayList<StructuredPostal> structuredPostalList = new ArrayList<>();
-                projection = new String[] {
-                        ContactsContract.Data._ID, // 0
+                ArrayList<StructuredPostal> structuredPostalList = new ArrayList<>(); projection = new String[] {ContactsContract.Data._ID, // 0
                         ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, // 1
                 };
                 String selection = ContactsContract.Contacts.Data.MIMETYPE + "=? AND " + ContactsContract.Data.CONTACT_ID + "=?";
@@ -311,12 +306,10 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
      */
 
     @Override
-    public void onClickPositive(int tag, Object payload) {
-    }
+    public void onClickPositive(int tag, Object payload) {}
 
     @Override
-    public void onClickNegative(int tag, Object payload) {
-    }
+    public void onClickNegative(int tag, Object payload) {}
 
     @Override
     public void onClickListItem(int tag, int index, Object payload) {
@@ -343,34 +336,59 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
         startAddressInfoEditActivity(addressInfo.uri);
     }
 
+    @Override
+    public void onListLoaded(boolean isEmpty) {
+        // First disable any previously installed listener
+        mSwiGeofencing.setOnCheckedChangeListener(null); if (isEmpty) {
+            // Empty list, do not bother enabling the geofencing switch
+            mSwiGeofencing.setEnabled(false); mSwiGeofencing.setChecked(false);
+        } else {
+            // Enable the switch
+            mSwiGeofencing.setEnabled(true);
+            // Check it if enabled in prefs
+            SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
+            boolean enabled = preferenceManager.getBoolean(Constants.PREF_GEOFENCING_ENABLED, Constants.PREF_GEOFENCING_ENABLED_DEFAULT);
+            mSwiGeofencing.setChecked(enabled);
+            // Show disabled indicator if needed
+            if (enabled) {
+                mConGeofencingDisabled.setVisibility(View.GONE);
+            } else {
+                mConGeofencingDisabled.setVisibility(View.VISIBLE);
+            }
+        }
+        // Install listener
+        mSwiGeofencing.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                onGeofencingCheckedChanged(isChecked);
+            }
+        });
+    }
 
-    private void onGeotrackingCheckedChanged(boolean isChecked) {
+
+    private void onGeofencingCheckedChanged(boolean isChecked) {
         SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
         preferenceManager.edit().putBoolean(Constants.PREF_GEOFENCING_ENABLED, isChecked).commit();
         GeofencingService.refresh(this);
         if (isChecked) {
-            Toast.makeText(this, R.string.addressInfo_list_geotrackingOn, Toast.LENGTH_SHORT).show();
-            mConGeotrackingDisabled.animate().alpha(0f).setListener(new Animator.AnimatorListener() {
+            Toast.makeText(this, R.string.addressInfo_list_geofencingOn, Toast.LENGTH_SHORT).show();
+            mConGeofencingDisabled.animate().alpha(0f).setListener(new Animator.AnimatorListener() {
                 @Override
-                public void onAnimationStart(Animator animation) {
-                }
+                public void onAnimationStart(Animator animation) {}
 
                 @Override
                 public void onAnimationEnd(Animator animation) {
-                    mConGeotrackingDisabled.setVisibility(View.GONE);
+                    mConGeofencingDisabled.setVisibility(View.GONE);
                 }
 
                 @Override
-                public void onAnimationCancel(Animator animation) {
-                }
+                public void onAnimationCancel(Animator animation) {}
 
                 @Override
-                public void onAnimationRepeat(Animator animation) {
-                }
+                public void onAnimationRepeat(Animator animation) {}
             });
         } else {
-            mConGeotrackingDisabled.setVisibility(View.VISIBLE);
-            mConGeotrackingDisabled.animate().alpha(1f).setListener(null);
+            mConGeofencingDisabled.setVisibility(View.VISIBLE); mConGeofencingDisabled.animate().alpha(1f).setListener(null);
         }
     }
 }

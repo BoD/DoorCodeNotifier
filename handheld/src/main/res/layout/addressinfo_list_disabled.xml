@@ -42,7 +42,7 @@
             android:layout_weight="1"
             android:gravity="right"
             android:padding="8dp"
-            android:text="@string/addressInfo_list_geotrackingOff"
+            android:text="@string/addressInfo_list_geofencingOff"
             android:textColor="#FFF"
             style="@style/TextAppearance.Toast" />
 

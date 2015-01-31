@@ -36,7 +36,7 @@
         tools:layout="@layout/addressinfo_list_list" />
 
     <include
-        android:id="@+id/conGeotrackingDisabled"
+        android:id="@+id/conFencingDisabled"
         layout="@layout/addressinfo_list_disabled"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />

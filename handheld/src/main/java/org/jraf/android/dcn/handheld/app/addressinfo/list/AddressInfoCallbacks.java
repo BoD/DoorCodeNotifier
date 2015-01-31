@@ -28,4 +28,6 @@ import org.jraf.android.dcn.handheld.model.addressinfo.AddressInfo;
 
 public interface AddressInfoCallbacks {
     void onAddressInfoClicked(AddressInfo addressInfo);
+
+    void onListLoaded(boolean isEmpty);
 }

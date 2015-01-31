@@ -83,13 +83,14 @@ public class AddressInfoListFragment extends BaseFragment<AddressInfoCallbacks> 
             mRclList.setAdapter(mAdapter);
         } else {
             mAdapter.clear();
-        }
-        if (data.isEmpty()) {
+        } boolean empty = data.isEmpty(); if (empty) {
             mTxtEmpty.setVisibility(View.VISIBLE);
         } else {
             mTxtEmpty.setVisibility(View.GONE);
             mAdapter.addAll(data);
         }
+
+        getCallbacks().onListLoaded(empty);
     }
 
     @Override
