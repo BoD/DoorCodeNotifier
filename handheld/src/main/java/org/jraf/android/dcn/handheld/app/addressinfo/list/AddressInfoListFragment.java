@@ -33,6 +33,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import org.jraf.android.dcn.R;
 import org.jraf.android.dcn.handheld.model.addressinfo.AddressInfo;
@@ -47,6 +48,9 @@ public class AddressInfoListFragment extends BaseFragment<AddressInfoCallbacks> 
     @InjectView(R.id.rclList)
     protected RecyclerView mRclList;
 
+    @InjectView(R.id.txtEmpty)
+    protected TextView mTxtEmpty;
+
     private AddressInfoAdapter mAdapter;
 
     @Override
@@ -55,6 +59,9 @@ public class AddressInfoListFragment extends BaseFragment<AddressInfoCallbacks> 
         ButterKnife.inject(this, res);
         mRclList.setHasFixedSize(true);
         mRclList.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        // Don't show the empty text while loading
+        mTxtEmpty.setVisibility(View.GONE);
         return res;
     }
 
@@ -77,7 +84,12 @@ public class AddressInfoListFragment extends BaseFragment<AddressInfoCallbacks> 
         } else {
             mAdapter.clear();
         }
-        mAdapter.addAll(data);
+        if (data.isEmpty()) {
+            mTxtEmpty.setVisibility(View.VISIBLE);
+        } else {
+            mTxtEmpty.setVisibility(View.GONE);
+            mAdapter.addAll(data);
+        }
     }
 
     @Override

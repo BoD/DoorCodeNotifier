@@ -40,6 +40,7 @@
     <string name="addressInfo_list_geofencing">Track location</string>
     <string name="addressInfo_list_geotrackingOn">Location tracking / notifications: ON</string>
     <string name="addressInfo_list_geotrackingOff">Location tracking: OFF\n(no notifications)</string>
+    <string name="addressInfo_list_empty">Empty!\nClick the <b>+</b> to add a door code.</string>
 
     <string name="addressInfo_edit_loadError">Could not load this address</string>
     <string name="addressInfo_edit_title">Address information</string>
