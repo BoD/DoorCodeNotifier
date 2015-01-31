@@ -35,6 +35,12 @@
         android:tag="list"
         tools:layout="@layout/addressinfo_list_list" />
 
+    <include
+        android:id="@+id/conGeotrackingDisabled"
+        layout="@layout/addressinfo_list_disabled"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <ImageButton
         android:id="@+id/btnAdd"
         android:layout_width="wrap_content"

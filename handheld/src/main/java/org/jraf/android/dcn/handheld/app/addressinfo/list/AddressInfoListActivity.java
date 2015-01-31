@@ -24,6 +24,7 @@
  */
 package org.jraf.android.dcn.handheld.app.addressinfo.list;
 
+import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.content.ComponentName;
 import android.content.ContentUris;
@@ -64,6 +65,7 @@ import org.jraf.android.util.string.StringUtil;
 import java.util.ArrayList;
 
 import butterknife.ButterKnife;
+import butterknife.InjectView;
 import butterknife.OnClick;
 
 
@@ -71,10 +73,14 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
     private static final int REQUEST_CONTACT_PICK = 0;
     private static final int DIALOG_CHOOSE_ADDRESS_TO_EDIT = 0;
 
+    @InjectView(R.id.conGeotrackingDisabled)
+    protected View mConGeotrackingDisabled;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.addressinfo_list);
+        ButterKnife.inject(this);
 
         // Custom action bar that contains the "done" button for saving changes
         ActionBar actionBar = getSupportActionBar();
@@ -89,10 +95,14 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
                 onGeotrackingCheckedChanged(isChecked);
             }
         });
+        if (enabled) {
+            mConGeotrackingDisabled.setVisibility(View.GONE);
+        } else {
+            mConGeotrackingDisabled.setVisibility(View.VISIBLE);
+        }
         actionBar.setDisplayShowCustomEnabled(true);
         actionBar.setCustomView(customActionBarView, new ActionBar.LayoutParams(Gravity.CENTER_VERTICAL | Gravity.RIGHT));
 
-        ButterKnife.inject(this);
 
         // TODO Check for Google Play Services ( http://developer.android.com/training/location/geofencing.html )
     }
@@ -338,7 +348,29 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
         SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
         preferenceManager.edit().putBoolean(Constants.PREF_GEOFENCING_ENABLED, isChecked).commit();
         GeofencingService.refresh(this);
-        Toast.makeText(this, isChecked ? R.string.addressInfo_list_geotrackingOn : R.string.addressInfo_list_geotrackingOff, Toast.LENGTH_SHORT).show();
-    }
+        if (isChecked) {
+            Toast.makeText(this, R.string.addressInfo_list_geotrackingOn, Toast.LENGTH_SHORT).show();
+            mConGeotrackingDisabled.animate().alpha(0f).setListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+                }
 
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mConGeotrackingDisabled.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+                }
+            });
+        } else {
+            mConGeotrackingDisabled.setVisibility(View.VISIBLE);
+            mConGeotrackingDisabled.animate().alpha(1f).setListener(null);
+        }
+    }
 }

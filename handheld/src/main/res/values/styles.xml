@@ -41,9 +41,15 @@
         <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="NotificationContentTitleTextAppearance" >
-        <item name="android:textSize">28sp</item>
+    <style name="NotificationContentTitleTextAppearance">
+    <item name="android:textSize">28sp</item>
         <!--<item name="android:textColor">@color/notif_content_title</item>-->
+    </style>
+
+    <style name="TextAppearance.Toast" parent="android:style/TextAppearance">
+        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:shadowColor">#BB000000</item>
+        <item name="android:shadowRadius">2.75</item>
     </style>
 
 </resources>
