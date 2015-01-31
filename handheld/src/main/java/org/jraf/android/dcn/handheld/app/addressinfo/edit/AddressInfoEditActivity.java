@@ -144,26 +144,30 @@ public class AddressInfoEditActivity extends ActionBarActivity implements AlertD
                         ContactsContract.Contacts.LOOKUP_KEY, // 3
                 };
                 Cursor c = a.getContentResolver().query(addressUri, projection, null, null, null);
-                if (c.moveToNext()) {
-                    String formattedAddress = c.getString(2);
-                    AddressInfo addressInfo;
-                    if (AddressInfo.isAugmented(formattedAddress)) {
-                        // Augmented (existing AddressInfo)
-                        addressInfo = AddressInfo.parseAugmented(formattedAddress);
-                    } else {
-                        // New AddressInfo
-                        addressInfo = new AddressInfo();
-                        addressInfo.formattedAddress = formattedAddress;
-                    }
-                    addressInfo.uri = addressUri;
-                    addressInfo.contactInfo.uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, c.getLong(0));
-                    addressInfo.contactInfo.contentLookupUri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_LOOKUP_URI, c.getString(3));
-                    addressInfo.contactInfo.displayName = c.getString(1);
+                try {
+                    if (c.moveToNext()) {
+                        String formattedAddress = c.getString(2);
+                        AddressInfo addressInfo;
+                        if (AddressInfo.isAugmented(formattedAddress)) {
+                            // Augmented (existing AddressInfo)
+                            addressInfo = AddressInfo.parseAugmented(formattedAddress);
+                        } else {
+                            // New AddressInfo
+                            addressInfo = new AddressInfo();
+                            addressInfo.formattedAddress = formattedAddress;
+                        }
+                        addressInfo.uri = addressUri;
+                        addressInfo.contactInfo.uri = ContentUris.withAppendedId(ContactsContract.Contacts.CONTENT_URI, c.getLong(0));
+                        addressInfo.contactInfo.contentLookupUri = Uri.withAppendedPath(ContactsContract.Contacts.CONTENT_LOOKUP_URI, c.getString(3));
+                        addressInfo.contactInfo.displayName = c.getString(1);
 
-                    a.mAddressInfo = addressInfo;
-                } else {
-                    // Should not normally happen
-                    throw new Exception("Could not find uri " + addressUri);
+                        a.mAddressInfo = addressInfo;
+                    } else {
+                        // Should not normally happen
+                        throw new Exception("Could not find uri " + addressUri);
+                    }
+                } finally {
+                    c.close();
                 }
             }
 

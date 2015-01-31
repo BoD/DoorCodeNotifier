@@ -68,7 +68,7 @@ public class GeofencingService extends IntentService {
         Log.d("intent=" + StringUtil.toString(intent));
         if (ACTION_REFRESH_GEOFENCES.equals(intent.getAction())) {
             // Triggered by app logic
-            GeofencingHelper.get().connect(this);
+            GeofencingHelper.get().connect(this);  // Blocking
             SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
             boolean enabled = preferenceManager.getBoolean(Constants.PREF_GEOFENCING_ENABLED, Constants.PREF_GEOFENCING_ENABLED_DEFAULT);
             if (enabled) {
@@ -101,7 +101,8 @@ public class GeofencingService extends IntentService {
                 }
             }
             if (addressInfo == null) {
-                // Can happen if the AddressInfo has been deleted, and the geofences were not refreshed (maybe after a contact sync?)
+                // Can happen if the AddressInfo has been deleted, and the geofences were not refreshed (maybe after a
+                // manual contact edit, or a contact sync?)
                 Log.w("The geofence id does not match any AddressInfo: ignore");
                 return;
             }

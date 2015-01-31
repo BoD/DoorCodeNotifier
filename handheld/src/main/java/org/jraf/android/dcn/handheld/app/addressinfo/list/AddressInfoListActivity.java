@@ -172,7 +172,7 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
                         // TODO Handle error case
                     }
                 } finally {
-                    if (c != null) c.close();
+                    c.close();
                 }
 
                 // 2/ Find addresses for this contact

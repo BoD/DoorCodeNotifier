@@ -53,6 +53,7 @@ public class AddressInfoLoader extends AsyncTaskLoader<List<AddressInfo>> {
         Log.d();
         List<AddressInfo> data = new ArrayList<>();
 
+        if (mCursor != null && !mCursor.isClosed()) mCursor.close();
         mCursor = queryContactProvider(getContext());
         mCursor.registerContentObserver(mObserver);
         while (mCursor.moveToNext()) {
@@ -103,38 +104,33 @@ public class AddressInfoLoader extends AsyncTaskLoader<List<AddressInfo>> {
         List<AddressInfo> data = new ArrayList<>();
 
         Cursor cursor = queryContactProvider(context);
-        while (cursor.moveToNext()) {
-            AddressInfo addressInfo = getAddressInfoFromCursor(cursor);
-            if (addressInfo == null) continue;
+        try {
+            while (cursor.moveToNext()) {
+                AddressInfo addressInfo = getAddressInfoFromCursor(cursor);
+                if (addressInfo == null) continue;
 
-            data.add(addressInfo);
+                data.add(addressInfo);
+            }
+        } finally {
+            cursor.close();
         }
-        cursor.close();
 
         return data;
     }
 
     @Override
     public void deliverResult(List<AddressInfo> data) {
-        if (isReset()) {
-            releaseResources(data);
-            return;
-        }
-
-        List<AddressInfo> oldData = mData;
+        Log.d();
         mData = data;
 
         if (isStarted()) {
             super.deliverResult(data);
         }
-
-        if (oldData != null && oldData != data) {
-            releaseResources(oldData);
-        }
     }
 
     @Override
     protected void onStartLoading() {
+        Log.d();
         if (mData != null) {
             deliverResult(mData);
         }
@@ -153,27 +149,30 @@ public class AddressInfoLoader extends AsyncTaskLoader<List<AddressInfo>> {
 
     @Override
     protected void onStopLoading() {
+        Log.d();
         cancelLoad();
     }
 
     @Override
     protected void onReset() {
+        Log.d();
         onStopLoading();
-
-        if (mData != null) {
-            releaseResources(mData);
-            mData = null;
-        }
+        releaseResources();
     }
 
     @Override
     public void onCanceled(List<AddressInfo> data) {
+        Log.d();
         super.onCanceled(data);
-        releaseResources(data);
+        releaseResources();
     }
 
-    private void releaseResources(List<AddressInfo> data) {
-        data.clear();
-        if (mCursor != null) mCursor.close();
+    private void releaseResources() {
+        Log.d();
+        mData = null;
+        if (mCursor != null) {
+            if (!mCursor.isClosed()) mCursor.close();
+            mCursor = null;
+        }
     }
 }
