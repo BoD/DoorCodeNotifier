@@ -87,11 +87,7 @@ public class GeofencingService extends IntentService {
             }
         } else if (ACTION_DISMISS_NOTIFICATION.equals(action)) {
             // Triggered when dismissing the handheld notification
-
-            // Dismiss Wear notification
-            // Blocking
-            mWearHelper.connect(this);
-            mWearHelper.removeNotification();
+            dismissNotification();
         } else {
             // Triggered by the geofence system
             GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);

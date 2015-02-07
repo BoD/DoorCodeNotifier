@@ -26,7 +26,9 @@ package org.jraf.android.dcn.wearable.app.notif;
 
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.text.SpannableString;
@@ -47,11 +49,11 @@ import org.jraf.android.dcn.R;
 import org.jraf.android.dcn.common.wear.WearHelper;
 import org.jraf.android.util.log.wrapper.Log;
 
-public class NotificationService extends WearableListenerService {
+public class NotificationWearableListenerService extends WearableListenerService {
     private static final int NOTIFICATION_ID = 0;
     private WearHelper mWearHelper = WearHelper.get();
 
-    public NotificationService() {}
+    public NotificationWearableListenerService() {}
 
     @Override
     public void onPeerConnected(Node peer) {}
@@ -84,7 +86,6 @@ public class NotificationService extends WearableListenerService {
                 if (photoAsset != null) {
                     // Blocking
                     mWearHelper.connect(this);
-                    // Blocking
                     photo = mWearHelper.loadBitmapFromAsset(photoAsset);
                 }
                 showNotification(title, text, photo);
@@ -116,6 +117,11 @@ public class NotificationService extends WearableListenerService {
         span = new TextAppearanceSpan(this, R.style.NotificationContentTextTextAppearance);
         spannableText.setSpan(span, 0, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         mainNotifBuilder.setContentText(spannableText);
+
+        // Dismiss intent
+        Intent dismissIntent = new Intent(NotificationIntentService.ACTION_DISMISS_NOTIFICATION, null, this, NotificationIntentService.class);
+        PendingIntent dismissPendingIntent = PendingIntent.getService(this, 0, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        mainNotifBuilder.setDeleteIntent(dismissPendingIntent);
 
         // Wear specifics
         Notification.WearableExtender wearableExtender = new Notification.WearableExtender();
