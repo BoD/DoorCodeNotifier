@@ -43,6 +43,7 @@ import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingEvent;
 
 import org.jraf.android.dcn.R;
+import org.jraf.android.dcn.common.wear.WearHelper;
 import org.jraf.android.dcn.handheld.Constants;
 import org.jraf.android.dcn.handheld.app.addressinfo.list.AddressInfoLoader;
 import org.jraf.android.dcn.handheld.model.addressinfo.AddressInfo;
@@ -54,10 +55,15 @@ import java.util.List;
 
 public class GeofencingService extends IntentService {
     public static final String ACTION_REFRESH_GEOFENCES = "ACTION_REFRESH_GEOFENCES";
+    public static final String ACTION_DISMISS_NOTIFICATION = "ACTION_DISMISS_NOTIFICATION";
+
     private static final int NOTIFICATION_RESPONSIVENESS_MS = 5 * 1000; // 4 seconds
     private static final float RADIUS_M = 200;
     private static final int DISMISS_TIMEOUT_MS = 6 * 60 * 1000; // 6 minutes
-    private static final int NOTIFICATION_ID = 1;
+    private static final int NOTIFICATION_ID = 0;
+
+    private GeofencingHelper mGeofencingHelper = GeofencingHelper.get();
+    private WearHelper mWearHelper = WearHelper.get();
 
     public GeofencingService() {
         super(GeofencingService.class.getName());
@@ -66,9 +72,10 @@ public class GeofencingService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Log.d("intent=" + StringUtil.toString(intent));
-        if (ACTION_REFRESH_GEOFENCES.equals(intent.getAction())) {
+        String action = intent.getAction();
+        if (ACTION_REFRESH_GEOFENCES.equals(action)) {
             // Triggered by app logic
-            GeofencingHelper.get().connect(this);  // Blocking
+            mGeofencingHelper.connect(this);  // Blocking
             SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
             boolean enabled = preferenceManager.getBoolean(Constants.PREF_GEOFENCING_ENABLED, Constants.PREF_GEOFENCING_ENABLED_DEFAULT);
             if (enabled) {
@@ -78,6 +85,13 @@ public class GeofencingService extends IntentService {
                 // Also dismiss any prior notifications
                 dismissNotification();
             }
+        } else if (ACTION_DISMISS_NOTIFICATION.equals(action)) {
+            // Triggered when dismissing the handheld notification
+
+            // Dismiss Wear notification
+            // Blocking
+            mWearHelper.connect(this);
+            mWearHelper.removeNotification();
         } else {
             // Triggered by the geofence system
             GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
@@ -131,7 +145,7 @@ public class GeofencingService extends IntentService {
         for (AddressInfo addressInfo : addressInfoList) {
             geofenceList.add(toGeofence(addressInfo));
         }
-        GeofencingHelper.get().addGeofences(geofenceList);
+        mGeofencingHelper.addGeofences(geofenceList);
     }
 
     private Geofence toGeofence(AddressInfo addressInfo) {
@@ -148,7 +162,7 @@ public class GeofencingService extends IntentService {
 
     private void removeAllGeofences() {
         Log.d();
-        GeofencingHelper.get().removeAllGeofences();
+        mGeofencingHelper.removeAllGeofences();
     }
 
 
@@ -159,7 +173,7 @@ public class GeofencingService extends IntentService {
     private void showEnteredNotification(AddressInfo addressInfo) {
         Log.d("addressInfo=" + addressInfo);
         NotificationCompat.Builder mainNotifBuilder = new NotificationCompat.Builder(this);
-        mainNotifBuilder.setSmallIcon(R.drawable.ic_stat_entered); // TODO a real icon
+        mainNotifBuilder.setSmallIcon(R.drawable.ic_stat_entered);
         String title = getNotificationTitle(addressInfo);
 
         String textSmall = getNotificationText(addressInfo, false);
@@ -183,15 +197,13 @@ public class GeofencingService extends IntentService {
         Bitmap contactPhoto = addressInfo.getContactPhoto(this);
         if (contactPhoto != null) mainNotifBuilder.setLargeIcon(contactPhoto);
 
-//        // Go to the AddressInfo's edit activity
-//        TaskStackBuilder taskStackBuilder = TaskStackBuilder.create(this);
-//        taskStackBuilder.addParentStack(AddressInfoListActivity.class);
-//        Intent intent = new Intent(this, AddressInfoEditActivity.class).setData(addressInfo.uri);
-//        taskStackBuilder.addNextIntent(intent);
-//        mainNotifBuilder.setContentIntent(taskStackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
-
         // Auto cancel
         mainNotifBuilder.setAutoCancel(true);
+
+        // Dismiss intent
+        Intent dismissIntent = new Intent(ACTION_DISMISS_NOTIFICATION, null, this, getClass());
+        PendingIntent dismissPendingIntent = PendingIntent.getService(this, 0, dismissIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        mainNotifBuilder.setDeleteIntent(dismissPendingIntent);
 
         // Main action (click on the notification itself)
         Intent mainIntent = new Intent(Intent.ACTION_VIEW);
@@ -218,21 +230,29 @@ public class GeofencingService extends IntentService {
             mainNotifBuilder.addAction(R.drawable.ic_action_call, callText, callPendingIntent);
             mainNotifBuilder.addAction(R.drawable.ic_action_sms, smsText, smsPendingIntent);
 
-            // Wearable (we need to do that to have specific 'full' icons on wearables)
-            NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender();
-            wearableExtender.addAction(new NotificationCompat.Action(R.drawable.ic_action_call_full, callText, callPendingIntent));
-            wearableExtender.addAction(new NotificationCompat.Action(R.drawable.ic_action_sms_full, smsText, smsPendingIntent));
-
-            // Could be useful
-            wearableExtender.setHintScreenTimeout(NotificationCompat.WearableExtender.SCREEN_TIMEOUT_LONG);
-
-            mainNotifBuilder.extend(wearableExtender);
+//            // Wearable (we need to do that to have specific 'full' icons on wearables)
+//            NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender();
+//            wearableExtender.addAction(new NotificationCompat.Action(R.drawable.ic_action_call_full, callText, callPendingIntent));
+//            wearableExtender.addAction(new NotificationCompat.Action(R.drawable.ic_action_sms_full, smsText, smsPendingIntent));
+//
+//            // Could be useful
+//            wearableExtender.setHintScreenTimeout(NotificationCompat.WearableExtender.SCREEN_TIMEOUT_LONG);
+//
+//            mainNotifBuilder.extend(wearableExtender);
         }
 
-        Notification notification = mainNotifBuilder.build();
+        // Since we have a specific Wear notification, show this one only on handheld
+        mainNotifBuilder.setLocalOnly(true);
 
+        // Show it
+        Notification notification = mainNotifBuilder.build();
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(NOTIFICATION_ID, notification);
+
+        // Show a Wear notification
+        // Blocking
+        mWearHelper.connect(this);
+        mWearHelper.putNotification(title, textSmall, contactPhoto);
     }
 
     private String getNotificationTitle(AddressInfo addressInfo) {
@@ -271,6 +291,11 @@ public class GeofencingService extends IntentService {
         Log.d();
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancel(NOTIFICATION_ID);
+
+        // Dismiss Wear notification
+        // Blocking
+        mWearHelper.connect(this);
+        mWearHelper.removeNotification();
     }
 
     public static void refresh(Context context) {
@@ -278,5 +303,12 @@ public class GeofencingService extends IntentService {
         Intent intent = new Intent(context, GeofencingService.class);
         intent.setAction(ACTION_REFRESH_GEOFENCES);
         context.startService(intent);
+    }
+
+    @Override
+    public void onDestroy() {
+        mGeofencingHelper.disconnect();
+        mWearHelper.disconnect();
+        super.onDestroy();
     }
 }

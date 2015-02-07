@@ -1,13 +1,12 @@
+.DS_Store
+.idea
 .gradle
 /local.properties
-/.idea/workspace.xml
-/.idea/libraries
-.DS_Store
 /build
 dcn.iml
-.idea
 build.properties
 crashlytics.properties
 com_crashlytics_export_strings.xml
+crashlytics-build.properties
 etc/apk
 etc/proguard

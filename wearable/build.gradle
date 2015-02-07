@@ -9,19 +9,34 @@ android {
         applicationId "org.jraf.android.dcn"
         minSdkVersion 20
         targetSdkVersion 21
-        versionCode 1
-        versionName "1.0"
+        versionCode buildNumber
+        versionName buildProperties['versionName']
+        resConfigs "en", "fr"
+
+        // For now we enable strict mode for all the configs
+        buildConfigField 'boolean', 'STRICT_MODE', 'true'
     }
+
+    signingConfigs {
+        release {
+            storeFile file(buildProperties['key-store'])
+            storePassword buildProperties['key-store-password']
+            keyAlias buildProperties['key-alias']
+            keyPassword buildProperties['key-alias-password']
+        }
+    }
+
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
         }
     }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.google.android.support:wearable:1.0.0'
-    compile 'com.google.android.gms:play-services-wearable:6.5.87'
+//    compile 'com.google.android.support:wearable:1.0.0'
+    compile project(':common')
 }

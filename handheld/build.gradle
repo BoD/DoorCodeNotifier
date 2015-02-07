@@ -30,7 +30,7 @@ android {
         release {
             minifyEnabled true
             shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             signingConfig signingConfigs.release
         }
     }
@@ -43,11 +43,11 @@ dependencies {
     compile 'com.android.support:appcompat-v7:21.0.3'
     compile 'com.android.support:recyclerview-v7:21.0.2'
     compile 'com.android.support:cardview-v7:21.0.2'
-    compile 'org.jraf:jraf-android-util:1.0.0'
     compile 'com.jakewharton:butterknife:6.0.0'
     compile 'com.squareup.picasso:picasso:2.4.0'
     compile 'com.google.android.gms:play-services-location:6.5.87'
     compile 'com.crashlytics.sdk.android:crashlytics:2.2.0'
+    compile project(':common')
 }
 
 task deploy(dependsOn: assembleRelease) << {

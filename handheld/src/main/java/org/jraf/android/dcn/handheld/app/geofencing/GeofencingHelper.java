@@ -27,7 +27,6 @@ package org.jraf.android.dcn.handheld.app.geofencing;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -50,8 +49,7 @@ public class GeofencingHelper {
     private Context mContext;
     private GoogleApiClient mGoogleApiClient;
 
-    private GeofencingHelper() {
-    }
+    private GeofencingHelper() {}
 
     public static GeofencingHelper get() {
         return INSTANCE;
@@ -65,43 +63,16 @@ public class GeofencingHelper {
             return;
         }
 
-        final Object syncObject = new Object();
-
         mContext = context.getApplicationContext();
-        mGoogleApiClient = new GoogleApiClient.Builder(context).addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
-            @Override
-            public void onConnected(Bundle connectionHint) {
-                Log.d("connectionHint=" + connectionHint);
-                synchronized (syncObject) {
-                    syncObject.notifyAll();
-                }
-            }
-
-            @Override
-            public void onConnectionSuspended(int cause) {
-                Log.d("cause=" + cause);
-                // TODO reconnect
-            }
-        }).addOnConnectionFailedListener(new GoogleApiClient.OnConnectionFailedListener() {
-            @Override
-            public void onConnectionFailed(ConnectionResult result) {
-                Log.w("result=" + result);
-                // TODO handle failures
-            }
-        }).addApi(LocationServices.API).build();
-        mGoogleApiClient.connect();
-
-        // Block until connected (or at most 5s)
-        synchronized (syncObject) {
-            try {
-                syncObject.wait(5000);
-            } catch (InterruptedException e) {
-                // Should never happen
-            }
+        mGoogleApiClient = new GoogleApiClient.Builder(context).addApi(LocationServices.API).build();
+        // Blocking
+        ConnectionResult connectionResult = mGoogleApiClient.blockingConnect();
+        if (!connectionResult.isSuccess()) {
+            // TODO handle failures
         }
     }
 
-    public void disconnect() {
+    public synchronized void disconnect() {
         Log.d();
         if (mGoogleApiClient != null) mGoogleApiClient.disconnect();
         mGoogleApiClient = null;
