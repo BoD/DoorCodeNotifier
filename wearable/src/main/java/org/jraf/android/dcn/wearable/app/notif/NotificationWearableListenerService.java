@@ -31,6 +31,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.TextAppearanceSpan;
@@ -48,6 +50,7 @@ import com.google.android.gms.wearable.WearableListenerService;
 import org.jraf.android.dcn.R;
 import org.jraf.android.dcn.common.wear.WearHelper;
 import org.jraf.android.util.log.wrapper.Log;
+import org.jraf.android.util.parcelable.ParcelableUtil;
 
 public class NotificationWearableListenerService extends WearableListenerService {
     private static final int NOTIFICATION_ID = 0;
@@ -88,7 +91,11 @@ public class NotificationWearableListenerService extends WearableListenerService
                     mWearHelper.connect(this);
                     photo = mWearHelper.loadBitmapFromAsset(photoAsset);
                 }
-                showNotification(title, text, photo);
+                byte[] contactUriBytes = dataMap.getByteArray(WearHelper.EXTRA_CONTACT_URI);
+                Uri contactUri = ParcelableUtil.unparcel(contactUriBytes, Uri.CREATOR);
+                String phoneNumber = dataMap.getString(WearHelper.EXTRA_PHONE_NUMBER);
+
+                showNotification(title, text, photo, contactUri, phoneNumber);
             }
         }
     }
@@ -99,9 +106,9 @@ public class NotificationWearableListenerService extends WearableListenerService
         notificationManager.cancel(NOTIFICATION_ID);
     }
 
-    private void showNotification(String title, String text, Bitmap photo) {
+    private void showNotification(String title, String text, @Nullable Bitmap photo, Uri contactUri, @Nullable String phoneNumber) {
         Log.d();
-        Notification.Builder mainNotifBuilder = new Notification.Builder(this);
+        NotificationCompat.Builder mainNotifBuilder = new NotificationCompat.Builder(this);
 
         // A small icon is mandatory even if it will be hidden - without this the system refuses to show the notification...
         mainNotifBuilder.setSmallIcon(R.drawable.ic_launcher);
@@ -124,11 +131,32 @@ public class NotificationWearableListenerService extends WearableListenerService
         mainNotifBuilder.setDeleteIntent(dismissPendingIntent);
 
         // Wear specifics
-        Notification.WearableExtender wearableExtender = new Notification.WearableExtender();
+        NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender();
         if (photo != null) wearableExtender.setBackground(photo);
-        Notification.Builder wearableNotifBuilder = wearableExtender.extend(mainNotifBuilder);
-        Notification notification = wearableNotifBuilder.build();
 
+        // Actions
+        if (phoneNumber != null) {
+            // Call action
+            Intent callIntent = new Intent(NotificationIntentService.ACTION_CALL, null, this, NotificationIntentService.class);
+            callIntent.putExtra(NotificationIntentService.EXTRA_PHONE_NUMBER, phoneNumber);
+            PendingIntent callPendingIntent = PendingIntent.getService(this, 0, callIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            String callText = getString(R.string.notification_action_call);
+            wearableExtender.addAction(new NotificationCompat.Action(R.drawable.ic_action_call_full, callText, callPendingIntent));
+
+            // Sms action
+            Intent smsIntent = new Intent(NotificationIntentService.ACTION_SMS, null, this, NotificationIntentService.class);
+            smsIntent.putExtra(NotificationIntentService.EXTRA_PHONE_NUMBER, phoneNumber);
+            PendingIntent smsPendingIntent = PendingIntent.getService(this, 0, smsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+            String smsText = getString(R.string.notification_action_sms);
+            wearableExtender.addAction(new NotificationCompat.Action(R.drawable.ic_action_sms_full, smsText, smsPendingIntent));
+        }
+
+        // Could be useful
+        wearableExtender.setHintScreenTimeout(NotificationCompat.WearableExtender.SCREEN_TIMEOUT_LONG);
+        mainNotifBuilder.extend(wearableExtender);
+
+        // Show the notification
+        Notification notification = mainNotifBuilder.build();
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(NOTIFICATION_ID, notification);
     }

@@ -51,8 +51,6 @@
     <string name="addressInfo_edit_couldNotGeocode">Could not locate the address</string>
     <string name="addressInfo_edit_emptyAddress">This field must not be empty</string>
 
-    <string name="notification_action_call">Call</string>
-    <string name="notification_action_sms">Text</string>
     <string name="notification_action_sms_body">I\'m here</string>
 
 </resources>

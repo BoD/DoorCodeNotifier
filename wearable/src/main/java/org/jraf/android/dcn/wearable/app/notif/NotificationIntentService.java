@@ -33,6 +33,11 @@ import org.jraf.android.util.string.StringUtil;
 
 public class NotificationIntentService extends IntentService {
     public static final String ACTION_DISMISS_NOTIFICATION = "ACTION_DISMISS_NOTIFICATION";
+    public static final String ACTION_OPEN = "ACTION_OPEN";
+    public static final String ACTION_CALL = "ACTION_CALL";
+    public static final String ACTION_SMS = "ACTION_SMS";
+
+    public static final String EXTRA_PHONE_NUMBER = "EXTRA_PHONE_NUMBER";
 
     private WearHelper mWearHelper = WearHelper.get();
 
@@ -42,23 +47,36 @@ public class NotificationIntentService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        Log.d("intent=" + StringUtil.toString(intent)); String action = intent.getAction(); if (ACTION_DISMISS_NOTIFICATION.equals(action)) {
-            // Triggered when dismissing the Wear notification
-            dismissNotification();
-        }
-    }
+        Log.d("intent=" + StringUtil.toString(intent));
 
-
-    private void dismissNotification() {
-        Log.d();
-
-        // Dismiss Wear notification
         // Blocking
-        mWearHelper.connect(this); mWearHelper.removeNotification();
+        mWearHelper.connect(this);
+
+        String action = intent.getAction();
+        switch (action) {
+            case ACTION_DISMISS_NOTIFICATION:
+                // Triggered when dismissing the Wear notification
+                mWearHelper.removeNotification();
+                break;
+
+            case ACTION_OPEN:
+                mWearHelper.sendMessageOpen(intent.getData());
+                break;
+
+            case ACTION_CALL:
+                mWearHelper.sendMessageCall(intent.getStringExtra(EXTRA_PHONE_NUMBER));
+                break;
+
+            case ACTION_SMS:
+                mWearHelper.sendMessageSms(intent.getStringExtra(EXTRA_PHONE_NUMBER));
+                break;
+        }
     }
 
     @Override
     public void onDestroy() {
-        mWearHelper.disconnect(); super.onDestroy();
+        mWearHelper.disconnect();
+        super.onDestroy();
     }
+
 }

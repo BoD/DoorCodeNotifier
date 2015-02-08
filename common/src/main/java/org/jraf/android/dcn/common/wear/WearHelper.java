@@ -35,15 +35,20 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.Asset;
 import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.Node;
+import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
 
 import org.jraf.android.util.annotation.Background;
 import org.jraf.android.util.log.wrapper.Log;
+import org.jraf.android.util.parcelable.ParcelableUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.HashSet;
 
 /**
  * Helper singleton class to deal with the wear APIs.<br/>
@@ -51,10 +56,19 @@ import java.io.InputStream;
  */
 public class WearHelper {
     private static final WearHelper INSTANCE = new WearHelper();
-    public static final String PATH_NOTIFICATION = "/notification";
+
+    private static final String PATH_NOTIFICATION = "/notification";
+    private static final String PATH_NOTIFICATION_ACTION = PATH_NOTIFICATION + "/action";
+    public static final String PATH_NOTIFICATION_ACTION_OPEN = PATH_NOTIFICATION_ACTION + "/open";
+    public static final String PATH_NOTIFICATION_ACTION_CALL = PATH_NOTIFICATION_ACTION + "/call";
+    public static final String PATH_NOTIFICATION_ACTION_SMS = PATH_NOTIFICATION_ACTION + "/sms";
+
     public static final String EXTRA_TITLE = "EXTRA_TITLE";
     public static final String EXTRA_TEXT = "EXTRA_TEXT";
     public static final String EXTRA_PHOTO = "EXTRA_PHOTO";
+    public static final String EXTRA_CONTACT_URI = "EXTRA_CONTACT_URI";
+    public static final String EXTRA_PHONE_NUMBER = "EXTRA_PHONE_NUMBER";
+
 
     private Context mContext;
     private GoogleApiClient mGoogleApiClient;
@@ -89,7 +103,7 @@ public class WearHelper {
     }
 
     @Background(Background.Type.NETWORK)
-    public void putNotification(String title, String text, @Nullable Bitmap photo) {
+    public void putNotification(String title, String text, @Nullable Bitmap photo, Uri contactUri, @Nullable String phoneNumber) {
         Log.d();
         // First remove any old notification
         Wearable.DataApi.deleteDataItems(mGoogleApiClient, createUri(PATH_NOTIFICATION)).await();
@@ -101,6 +115,9 @@ public class WearHelper {
         dataMap.putString(EXTRA_TITLE, title);
         dataMap.putString(EXTRA_TEXT, text);
         if (photo != null) dataMap.putAsset(EXTRA_PHOTO, createAssetFromBitmap(photo));
+        byte[] contactUriBytes = ParcelableUtil.parcel(contactUri);
+        dataMap.putByteArray(EXTRA_CONTACT_URI, contactUriBytes);
+        if (phoneNumber != null) dataMap.putString(EXTRA_PHONE_NUMBER, phoneNumber);
 
         PutDataRequest request = putDataMapRequest.asPutDataRequest();
         Wearable.DataApi.putDataItem(mGoogleApiClient, request).await();
@@ -110,6 +127,49 @@ public class WearHelper {
     public void removeNotification() {
         Log.d();
         Wearable.DataApi.deleteDataItems(mGoogleApiClient, createUri(PATH_NOTIFICATION)).await();
+    }
+
+
+    /*
+     * Messaging.
+     */
+
+    @Background(Background.Type.NETWORK)
+    public void sendMessage(final String path, @Nullable final byte[] payload) {
+        Log.d("path=" + path);
+        HashSet<String> results = new HashSet<>();
+        NodeApi.GetConnectedNodesResult nodesResult = Wearable.NodeApi.getConnectedNodes(mGoogleApiClient).await();
+        for (Node node : nodesResult.getNodes()) {
+            Wearable.MessageApi.sendMessage(mGoogleApiClient, node.getId(), path, payload).await();
+        }
+    }
+
+    @Background(Background.Type.NETWORK)
+    public void sendMessageOpen(Uri uri) {
+        byte[] payload = ParcelableUtil.parcel(uri);
+        sendMessage(PATH_NOTIFICATION_ACTION_OPEN, payload);
+    }
+
+    @Background(Background.Type.NETWORK)
+    public void sendMessageCall(String phoneNumber) {
+        byte[] payload = null;
+        try {
+            payload = phoneNumber.getBytes("utf-8");
+        } catch (UnsupportedEncodingException ignored) {
+            // Can never happen
+        }
+        sendMessage(PATH_NOTIFICATION_ACTION_CALL, payload);
+    }
+
+    @Background(Background.Type.NETWORK)
+    public void sendMessageSms(String phoneNumber) {
+        byte[] payload = null;
+        try {
+            payload = phoneNumber.getBytes("utf-8");
+        } catch (UnsupportedEncodingException ignored) {
+            // Can never happen
+        }
+        sendMessage(PATH_NOTIFICATION_ACTION_SMS, payload);
     }
 
 

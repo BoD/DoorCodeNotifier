@@ -73,60 +73,68 @@ public class GeofencingService extends IntentService {
     protected void onHandleIntent(Intent intent) {
         Log.d("intent=" + StringUtil.toString(intent));
         String action = intent.getAction();
-        if (ACTION_REFRESH_GEOFENCES.equals(action)) {
-            // Triggered by app logic
-            mGeofencingHelper.connect(this);  // Blocking
-            SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
-            boolean enabled = preferenceManager.getBoolean(Constants.PREF_GEOFENCING_ENABLED, Constants.PREF_GEOFENCING_ENABLED_DEFAULT);
-            if (enabled) {
-                refreshGeofences();
-            } else {
-                removeAllGeofences();
-                // Also dismiss any prior notifications
-                dismissNotification();
-            }
-        } else if (ACTION_DISMISS_NOTIFICATION.equals(action)) {
-            // Triggered when dismissing the handheld notification
-            dismissNotification();
-        } else {
-            // Triggered by the geofence system
-            GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
-            if (geofencingEvent == null) {
-                Log.w("Received a null GeofencingEvent: ignore");
-                return;
-            }
-            if (geofencingEvent.hasError()) {
-                Log.w("Received an error GeofencingEvent (errorCode=" + geofencingEvent.getErrorCode() + "): ignore");
-                return;
-            }
-            // Get the corresponding AddressInfo (if several, only consider the first one)
-            String geofenceId = geofencingEvent.getTriggeringGeofences().get(0).getRequestId();
-            List<AddressInfo> addressInfoList = AddressInfoLoader.retrieveAddressInfoList(this);
-            AddressInfo addressInfo = null;
-            for (AddressInfo add : addressInfoList) {
-                if (add.uri.toString().equals(geofenceId)) {
-                    // Found it
-                    addressInfo = add;
-                    break;
-                }
-            }
-            if (addressInfo == null) {
-                // Can happen if the AddressInfo has been deleted, and the geofences were not refreshed (maybe after a
-                // manual contact edit, or a contact sync?)
-                Log.w("The geofence id does not match any AddressInfo: ignore");
-                return;
-            }
+        if (action == null) action = ""; // Avoid null to be able to use switch
+        switch (action) {
+            case ACTION_REFRESH_GEOFENCES:
+                // Triggered by app logic
+                mGeofencingHelper.connect(this);  // Blocking
 
-            switch (geofencingEvent.getGeofenceTransition()) {
-                case Geofence.GEOFENCE_TRANSITION_ENTER:
-                    showEnteredNotification(addressInfo);
-                    break;
-
-                case Geofence.GEOFENCE_TRANSITION_EXIT:
-                case Geofence.GEOFENCE_TRANSITION_DWELL:
+                SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
+                boolean enabled = preferenceManager.getBoolean(Constants.PREF_GEOFENCING_ENABLED, Constants.PREF_GEOFENCING_ENABLED_DEFAULT);
+                if (enabled) {
+                    refreshGeofences();
+                } else {
+                    removeAllGeofences();
+                    // Also dismiss any prior notifications
                     dismissNotification();
-                    break;
-            }
+                }
+                break;
+
+            case ACTION_DISMISS_NOTIFICATION:
+                // Triggered when dismissing the handheld notification
+                dismissNotification();
+                break;
+
+            default:
+                // Triggered by the geofence system
+                GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
+                if (geofencingEvent == null) {
+                    Log.w("Received a null GeofencingEvent: ignore");
+                    return;
+                }
+                if (geofencingEvent.hasError()) {
+                    Log.w("Received an error GeofencingEvent (errorCode=" + geofencingEvent.getErrorCode() + "): ignore");
+                    return;
+                }
+                // Get the corresponding AddressInfo (if several, only consider the first one)
+                String geofenceId = geofencingEvent.getTriggeringGeofences().get(0).getRequestId();
+                List<AddressInfo> addressInfoList = AddressInfoLoader.retrieveAddressInfoList(this);
+                AddressInfo addressInfo = null;
+                for (AddressInfo add : addressInfoList) {
+                    if (add.uri.toString().equals(geofenceId)) {
+                        // Found it
+                        addressInfo = add;
+                        break;
+                    }
+                }
+                if (addressInfo == null) {
+                    // Can happen if the AddressInfo has been deleted, and the geofences were not refreshed (maybe after a
+                    // manual contact edit, or a contact sync?)
+                    Log.w("The geofence id does not match any AddressInfo: ignore");
+                    return;
+                }
+
+                switch (geofencingEvent.getGeofenceTransition()) {
+                    case Geofence.GEOFENCE_TRANSITION_ENTER:
+                        showEnteredNotification(addressInfo);
+                        break;
+
+                    case Geofence.GEOFENCE_TRANSITION_EXIT:
+                    case Geofence.GEOFENCE_TRANSITION_DWELL:
+                        dismissNotification();
+                        break;
+                }
+                break;
         }
     }
 
@@ -214,6 +222,7 @@ public class GeofencingService extends IntentService {
             callIntent.setData(Uri.parse("tel:" + phoneNumber));
             PendingIntent callPendingIntent = PendingIntent.getActivity(this, 0, callIntent, PendingIntent.FLAG_UPDATE_CURRENT);
             String callText = getString(R.string.notification_action_call);
+            mainNotifBuilder.addAction(R.drawable.ic_action_call, callText, callPendingIntent);
 
             // Sms action
             Intent smsIntent = new Intent(Intent.ACTION_VIEW);
@@ -221,20 +230,7 @@ public class GeofencingService extends IntentService {
             smsIntent.putExtra("sms_body", getString(R.string.notification_action_sms_body));
             PendingIntent smsPendingIntent = PendingIntent.getActivity(this, 0, smsIntent, PendingIntent.FLAG_UPDATE_CURRENT);
             String smsText = getString(R.string.notification_action_sms);
-
-            // Handheld
-            mainNotifBuilder.addAction(R.drawable.ic_action_call, callText, callPendingIntent);
             mainNotifBuilder.addAction(R.drawable.ic_action_sms, smsText, smsPendingIntent);
-
-//            // Wearable (we need to do that to have specific 'full' icons on wearables)
-//            NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender();
-//            wearableExtender.addAction(new NotificationCompat.Action(R.drawable.ic_action_call_full, callText, callPendingIntent));
-//            wearableExtender.addAction(new NotificationCompat.Action(R.drawable.ic_action_sms_full, smsText, smsPendingIntent));
-//
-//            // Could be useful
-//            wearableExtender.setHintScreenTimeout(NotificationCompat.WearableExtender.SCREEN_TIMEOUT_LONG);
-//
-//            mainNotifBuilder.extend(wearableExtender);
         }
 
         // Since we have a specific Wear notification, show this one only on handheld
@@ -248,7 +244,7 @@ public class GeofencingService extends IntentService {
         // Show a Wear notification
         // Blocking
         mWearHelper.connect(this);
-        mWearHelper.putNotification(title, textSmall, contactPhoto);
+        mWearHelper.putNotification(title, textSmall, contactPhoto, addressInfo.contactInfo.contentLookupUri, phoneNumber);
     }
 
     private String getNotificationTitle(AddressInfo addressInfo) {
