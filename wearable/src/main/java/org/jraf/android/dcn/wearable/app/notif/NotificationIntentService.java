@@ -26,14 +26,16 @@ package org.jraf.android.dcn.wearable.app.notif;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.support.wearable.activity.ConfirmationActivity;
 
+import org.jraf.android.dcn.R;
 import org.jraf.android.dcn.common.wear.WearHelper;
 import org.jraf.android.util.log.wrapper.Log;
 import org.jraf.android.util.string.StringUtil;
 
 public class NotificationIntentService extends IntentService {
     public static final String ACTION_DISMISS_NOTIFICATION = "ACTION_DISMISS_NOTIFICATION";
-    public static final String ACTION_OPEN = "ACTION_OPEN";
+    public static final String ACTION_SHOW_CONTACT = "ACTION_SHOW_CONTACT";
     public static final String ACTION_CALL = "ACTION_CALL";
     public static final String ACTION_SMS = "ACTION_SMS";
 
@@ -59,18 +61,24 @@ public class NotificationIntentService extends IntentService {
                 mWearHelper.removeNotification();
                 break;
 
-            case ACTION_OPEN:
-                mWearHelper.sendMessageOpen(intent.getData());
+            case ACTION_SHOW_CONTACT: mWearHelper.sendMessageShowContact(intent.getData()); showOpenOnPhoneAnimation();
                 break;
 
             case ACTION_CALL:
-                mWearHelper.sendMessageCall(intent.getStringExtra(EXTRA_PHONE_NUMBER));
+                mWearHelper.sendMessageCall(intent.getStringExtra(EXTRA_PHONE_NUMBER)); showOpenOnPhoneAnimation();
                 break;
 
             case ACTION_SMS:
-                mWearHelper.sendMessageSms(intent.getStringExtra(EXTRA_PHONE_NUMBER));
+                mWearHelper.sendMessageSms(intent.getStringExtra(EXTRA_PHONE_NUMBER)); showOpenOnPhoneAnimation();
                 break;
         }
+    }
+
+    private void showOpenOnPhoneAnimation() {
+        Intent intent = new Intent(this, ConfirmationActivity.class);
+        intent.putExtra(ConfirmationActivity.EXTRA_ANIMATION_TYPE, ConfirmationActivity.OPEN_ON_PHONE_ANIMATION);
+        intent.putExtra(ConfirmationActivity.EXTRA_MESSAGE, getString(R.string.notification_openedOnPhone)); intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     @Override

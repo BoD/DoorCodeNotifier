@@ -24,4 +24,5 @@
   -->
 <resources>
     <string name="app_name">Door Code Notifier</string>
+    <string name="notification_openedOnPhone">Opened on phone</string>
 </resources>

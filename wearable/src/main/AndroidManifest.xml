@@ -56,6 +56,11 @@
         <!-- Notification (actions) service -->
         <service android:name=".wearable.app.notif.NotificationIntentService" />
 
+        <!-- Confirmation -->
+        <activity
+            android:name="android.support.wearable.activity.ConfirmationActivity"
+            android:theme="@style/Theme.Confirmation" />
+
     </application>
 
 </manifest>

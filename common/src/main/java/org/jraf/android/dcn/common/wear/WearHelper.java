@@ -59,7 +59,7 @@ public class WearHelper {
 
     private static final String PATH_NOTIFICATION = "/notification";
     private static final String PATH_NOTIFICATION_ACTION = PATH_NOTIFICATION + "/action";
-    public static final String PATH_NOTIFICATION_ACTION_OPEN = PATH_NOTIFICATION_ACTION + "/open";
+    public static final String PATH_NOTIFICATION_ACTION_SHOW_CONTACT = PATH_NOTIFICATION_ACTION + "/showContact";
     public static final String PATH_NOTIFICATION_ACTION_CALL = PATH_NOTIFICATION_ACTION + "/call";
     public static final String PATH_NOTIFICATION_ACTION_SMS = PATH_NOTIFICATION_ACTION + "/sms";
 
@@ -145,9 +145,8 @@ public class WearHelper {
     }
 
     @Background(Background.Type.NETWORK)
-    public void sendMessageOpen(Uri uri) {
-        byte[] payload = ParcelableUtil.parcel(uri);
-        sendMessage(PATH_NOTIFICATION_ACTION_OPEN, payload);
+    public void sendMessageShowContact(Uri uri) {
+        byte[] payload = ParcelableUtil.parcel(uri); sendMessage(PATH_NOTIFICATION_ACTION_SHOW_CONTACT, payload);
     }
 
     @Background(Background.Type.NETWORK)

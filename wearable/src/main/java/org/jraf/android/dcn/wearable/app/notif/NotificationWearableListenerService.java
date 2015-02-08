@@ -151,6 +151,13 @@ public class NotificationWearableListenerService extends WearableListenerService
             wearableExtender.addAction(new NotificationCompat.Action(R.drawable.ic_action_sms_full, smsText, smsPendingIntent));
         }
 
+        // Show contact action
+        Intent showContactIntent = new Intent(NotificationIntentService.ACTION_SHOW_CONTACT, null, this, NotificationIntentService.class);
+        showContactIntent.setData(contactUri);
+        PendingIntent showContactPendingIntent = PendingIntent.getService(this, 0, showContactIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        String showContactText = getString(R.string.notification_action_showContact);
+        wearableExtender.addAction(new NotificationCompat.Action(R.drawable.ic_action_show_contact_full, showContactText, showContactPendingIntent));
+
         // Could be useful
         wearableExtender.setHintScreenTimeout(NotificationCompat.WearableExtender.SCREEN_TIMEOUT_LONG);
         mainNotifBuilder.extend(wearableExtender);
