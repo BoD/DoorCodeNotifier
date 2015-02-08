@@ -49,6 +49,7 @@ import com.google.android.gms.wearable.WearableListenerService;
 
 import org.jraf.android.dcn.R;
 import org.jraf.android.dcn.common.wear.WearHelper;
+import org.jraf.android.util.log.LogUtil;
 import org.jraf.android.util.log.wrapper.Log;
 import org.jraf.android.util.parcelable.ParcelableUtil;
 
@@ -76,14 +77,14 @@ public class NotificationWearableListenerService extends WearableListenerService
             Uri uri = dataItem.getUri();
             Log.d("uri=" + uri);
             String path = uri.getPath();
-            Log.d("path=" + path);
-            if (dataEvent.getType() == DataEvent.TYPE_DELETED) {
+            Log.d("path=" + path); int type = dataEvent.getType(); Log.d("type=" + LogUtil.getConstantName(DataEvent.class, type, "TYPE_"));
+            if (type == DataEvent.TYPE_DELETED) {
                 dismissNotification();
             } else {
                 DataMapItem dataMapItem = DataMapItem.fromDataItem(dataItem);
                 DataMap dataMap = dataMapItem.getDataMap();
-                String title = dataMap.getString(WearHelper.EXTRA_TITLE);
-                String text = dataMap.getString(WearHelper.EXTRA_TEXT);
+                String title = dataMap.getString(WearHelper.EXTRA_TITLE); String textShort = dataMap.getString(WearHelper.EXTRA_TEXT_SHORT);
+                String textLong = dataMap.getString(WearHelper.EXTRA_TEXT_LONG);
                 Asset photoAsset = dataMap.getAsset(WearHelper.EXTRA_PHOTO);
                 Bitmap photo = null;
                 if (photoAsset != null) {
@@ -95,7 +96,7 @@ public class NotificationWearableListenerService extends WearableListenerService
                 Uri contactUri = ParcelableUtil.unparcel(contactUriBytes, Uri.CREATOR);
                 String phoneNumber = dataMap.getString(WearHelper.EXTRA_PHONE_NUMBER);
 
-                showNotification(title, text, photo, contactUri, phoneNumber);
+                showNotification(title, textShort, textLong, photo, contactUri, phoneNumber);
             }
         }
     }
@@ -106,24 +107,30 @@ public class NotificationWearableListenerService extends WearableListenerService
         notificationManager.cancel(NOTIFICATION_ID);
     }
 
-    private void showNotification(String title, String text, @Nullable Bitmap photo, Uri contactUri, @Nullable String phoneNumber) {
+    private void showNotification(String title, String textShort, String textLong, @Nullable Bitmap photo, Uri contactUri, @Nullable String phoneNumber) {
         Log.d();
         NotificationCompat.Builder mainNotifBuilder = new NotificationCompat.Builder(this);
 
-        // A small icon is mandatory even if it will be hidden - without this the system refuses to show the notification...
+        // Small icon
         mainNotifBuilder.setSmallIcon(R.drawable.ic_launcher);
 
         // Title
         SpannableString spannableTitle = new SpannableString(title);
-        Object span = new TextAppearanceSpan(this, R.style.NotificationContentTitleTextAppearance);
-        spannableTitle.setSpan(span, 0, title.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        Object appearanceSpan = new TextAppearanceSpan(this, R.style.NotificationContentTitleTextAppearance);
+        spannableTitle.setSpan(appearanceSpan, 0, title.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         mainNotifBuilder.setContentTitle(spannableTitle);
 
-        // Text
-        SpannableString spannableText = new SpannableString(text);
-        span = new TextAppearanceSpan(this, R.style.NotificationContentTextTextAppearance);
-        spannableText.setSpan(span, 0, text.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        mainNotifBuilder.setContentText(spannableText);
+        // Text (short) -- This may be completely useless since the "big text style" (below) is always used instead
+        SpannableString spannableTextShort = new SpannableString(textShort);
+        appearanceSpan = new TextAppearanceSpan(this, R.style.NotificationContentTextTextAppearance);
+        spannableTextShort.setSpan(appearanceSpan, 0, textShort.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        mainNotifBuilder.setContentText(spannableTextShort);
+
+        // Text (long)
+        SpannableString spannableTextLong = new SpannableString(textLong);
+        appearanceSpan = new TextAppearanceSpan(this, R.style.NotificationContentTextTextAppearance);
+        spannableTextLong.setSpan(appearanceSpan, 0, textLong.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        mainNotifBuilder.setStyle(new NotificationCompat.BigTextStyle().bigText(spannableTextLong));
 
         // Dismiss intent
         Intent dismissIntent = new Intent(NotificationIntentService.ACTION_DISMISS_NOTIFICATION, null, this, NotificationIntentService.class);
@@ -132,6 +139,8 @@ public class NotificationWearableListenerService extends WearableListenerService
 
         // Wear specifics
         NotificationCompat.WearableExtender wearableExtender = new NotificationCompat.WearableExtender();
+
+        // Contact photo
         if (photo != null) wearableExtender.setBackground(photo);
 
         // Actions
@@ -151,15 +160,18 @@ public class NotificationWearableListenerService extends WearableListenerService
             wearableExtender.addAction(new NotificationCompat.Action(R.drawable.ic_action_sms_full, smsText, smsPendingIntent));
         }
 
-        // Show contact action
+        // 'Show contact' action
         Intent showContactIntent = new Intent(NotificationIntentService.ACTION_SHOW_CONTACT, null, this, NotificationIntentService.class);
         showContactIntent.setData(contactUri);
         PendingIntent showContactPendingIntent = PendingIntent.getService(this, 0, showContactIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         String showContactText = getString(R.string.notification_action_showContact);
         wearableExtender.addAction(new NotificationCompat.Action(R.drawable.ic_action_show_contact_full, showContactText, showContactPendingIntent));
 
-        // Could be useful
-        wearableExtender.setHintScreenTimeout(NotificationCompat.WearableExtender.SCREEN_TIMEOUT_LONG);
+        // Misc
+        mainNotifBuilder.setPriority(NotificationCompat.PRIORITY_HIGH); // Time sensitive, try to appear on top
+        mainNotifBuilder.setCategory(NotificationCompat.CATEGORY_STATUS); // Not sure if this category is really the most appropriate
+        wearableExtender.setHintScreenTimeout(NotificationCompat.WearableExtender.SCREEN_TIMEOUT_LONG); // Could be useful
+
         mainNotifBuilder.extend(wearableExtender);
 
         // Show the notification

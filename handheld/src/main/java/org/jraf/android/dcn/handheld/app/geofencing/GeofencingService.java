@@ -176,33 +176,42 @@ public class GeofencingService extends IntentService {
 
     private void showEnteredNotification(AddressInfo addressInfo) {
         Log.d("addressInfo=" + addressInfo);
-        NotificationCompat.Builder mainNotifBuilder = new NotificationCompat.Builder(this);
-        mainNotifBuilder.setSmallIcon(R.drawable.ic_stat_entered);
-        String title = getNotificationTitle(addressInfo);
 
-        String textSmall = getNotificationText(addressInfo, false);
-        String textBig = getNotificationText(addressInfo, true);
+        String titleShort = getNotificationTitle(addressInfo, false); String titleLong = getNotificationTitle(addressInfo, true);
+        String textShort = getNotificationText(addressInfo, false); String textLong = getNotificationText(addressInfo, true);
+
+        NotificationCompat.Builder mainNotifBuilder = new NotificationCompat.Builder(this);
+
+        // Small icon
+        mainNotifBuilder.setSmallIcon(R.drawable.ic_stat_entered);
 
         // Make a bigger title
-        SpannableString titleSpannable = new SpannableString(title);
+        SpannableString titleSpannable = new SpannableString(titleShort);
         Object span = new TextAppearanceSpan(this, R.style.NotificationContentTitleTextAppearance);
-        titleSpannable.setSpan(span, 0, title.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        titleSpannable.setSpan(span, 0, titleShort.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        // Title
         mainNotifBuilder.setContentTitle(titleSpannable);
 
-        mainNotifBuilder.setTicker(title);
-        mainNotifBuilder.setContentText(textSmall);
-        mainNotifBuilder.setStyle(new NotificationCompat.BigTextStyle().bigText(textBig));
+        // Ticker
+        mainNotifBuilder.setTicker(titleShort);
+
+        // Text (short)
+        mainNotifBuilder.setContentText(textShort);
+
+        // Text (long)
+        mainNotifBuilder.setStyle(new NotificationCompat.BigTextStyle().bigText(textLong));
+
+        // Misc
         mainNotifBuilder.setPriority(NotificationCompat.PRIORITY_HIGH); // Time sensitive, try to appear on top
         mainNotifBuilder.setCategory(NotificationCompat.CATEGORY_STATUS); // Not sure if this category is really the most appropriate
         mainNotifBuilder.setLights(0, 0, 0); // No light
         mainNotifBuilder.setShowWhen(false); // No date
         mainNotifBuilder.addPerson(addressInfo.contactInfo.contentLookupUri.toString());
+
         // Contact photo
         Bitmap contactPhoto = addressInfo.getContactPhoto(this);
         if (contactPhoto != null) mainNotifBuilder.setLargeIcon(contactPhoto);
-
-        // Auto cancel
-        mainNotifBuilder.setAutoCancel(true);
 
         // Dismiss intent
         Intent dismissIntent = new Intent(ACTION_DISMISS_NOTIFICATION, null, this, getClass());
@@ -244,10 +253,10 @@ public class GeofencingService extends IntentService {
         // Show a Wear notification
         // Blocking
         mWearHelper.connect(this);
-        mWearHelper.putNotification(title, textSmall, contactPhoto, addressInfo.contactInfo.contentLookupUri, phoneNumber);
+        mWearHelper.putNotification(titleLong, textShort, textLong, contactPhoto, addressInfo.contactInfo.contentLookupUri, phoneNumber);
     }
 
-    private String getNotificationTitle(AddressInfo addressInfo) {
+    private String getNotificationTitle(AddressInfo addressInfo, boolean longForm) {
         if (addressInfo.codeList.isEmpty()) {
             if (addressInfo.otherInfo == null) {
                 return addressInfo.contactInfo.displayName;
@@ -255,9 +264,11 @@ public class GeofencingService extends IntentService {
             return addressInfo.otherInfo;
         }
         String res = "";
-        int i = 0;
+        int i = 0; String separator = longForm ? "\n" : " ‒ ";
         for (String code : addressInfo.codeList) {
-            if (i > 0) res += " ‒ ";
+            if (i > 0) {
+                res += separator;
+            }
             res += code;
             i++;
         }
@@ -265,7 +276,7 @@ public class GeofencingService extends IntentService {
         return res;
     }
 
-    private String getNotificationText(AddressInfo addressInfo, boolean big) {
+    private String getNotificationText(AddressInfo addressInfo, boolean longForm) {
         if (addressInfo.codeList.isEmpty()) {
             if (addressInfo.otherInfo == null) {
                 return null;
@@ -274,8 +285,7 @@ public class GeofencingService extends IntentService {
         }
         if (addressInfo.otherInfo == null) {
             return addressInfo.contactInfo.displayName;
-        }
-        String separator = big ? "\n" : " — ";
+        } String separator = longForm ? "\n" : " — ";
         return addressInfo.otherInfo + separator + addressInfo.contactInfo.displayName;
     }
 

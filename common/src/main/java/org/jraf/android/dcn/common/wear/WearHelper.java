@@ -64,7 +64,8 @@ public class WearHelper {
     public static final String PATH_NOTIFICATION_ACTION_SMS = PATH_NOTIFICATION_ACTION + "/sms";
 
     public static final String EXTRA_TITLE = "EXTRA_TITLE";
-    public static final String EXTRA_TEXT = "EXTRA_TEXT";
+    public static final String EXTRA_TEXT_SHORT = "EXTRA_TEXT_SHORT";
+    public static final String EXTRA_TEXT_LONG = "EXTRA_TEXT_LONG";
     public static final String EXTRA_PHOTO = "EXTRA_PHOTO";
     public static final String EXTRA_CONTACT_URI = "EXTRA_CONTACT_URI";
     public static final String EXTRA_PHONE_NUMBER = "EXTRA_PHONE_NUMBER";
@@ -103,7 +104,7 @@ public class WearHelper {
     }
 
     @Background(Background.Type.NETWORK)
-    public void putNotification(String title, String text, @Nullable Bitmap photo, Uri contactUri, @Nullable String phoneNumber) {
+    public void putNotification(String title, String textShort, String textLong, @Nullable Bitmap photo, Uri contactUri, @Nullable String phoneNumber) {
         Log.d();
         // First remove any old notification
         Wearable.DataApi.deleteDataItems(mGoogleApiClient, createUri(PATH_NOTIFICATION)).await();
@@ -112,8 +113,7 @@ public class WearHelper {
         PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(PATH_NOTIFICATION);
 
         DataMap dataMap = putDataMapRequest.getDataMap();
-        dataMap.putString(EXTRA_TITLE, title);
-        dataMap.putString(EXTRA_TEXT, text);
+        dataMap.putString(EXTRA_TITLE, title); dataMap.putString(EXTRA_TEXT_SHORT, textShort); dataMap.putString(EXTRA_TEXT_LONG, textLong);
         if (photo != null) dataMap.putAsset(EXTRA_PHOTO, createAssetFromBitmap(photo));
         byte[] contactUriBytes = ParcelableUtil.parcel(contactUri);
         dataMap.putByteArray(EXTRA_CONTACT_URI, contactUriBytes);
