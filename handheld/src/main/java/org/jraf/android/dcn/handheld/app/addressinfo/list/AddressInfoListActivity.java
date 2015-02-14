@@ -26,9 +26,11 @@ package org.jraf.android.dcn.handheld.app.addressinfo.list;
 
 import android.animation.Animator;
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -55,6 +57,9 @@ import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+
 import org.jraf.android.dcn.BuildConfig;
 import org.jraf.android.dcn.R;
 import org.jraf.android.dcn.handheld.Constants;
@@ -79,6 +84,8 @@ import butterknife.OnClick;
 
 public class AddressInfoListActivity extends ActionBarActivity implements AlertDialogListener, AddressInfoCallbacks {
     private static final int REQUEST_CONTACT_PICK = 0;
+    private static final int REQUEST_INSTALL_PLAY_SERVICES = 1;
+
     private static final int DIALOG_CHOOSE_ADDRESS_TO_EDIT = 0;
 
     @InjectView(R.id.conFencingDisabled)
@@ -94,8 +101,6 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
         super.onCreate(savedInstanceState);
         setContentView(R.layout.addressinfo_list);
         ButterKnife.inject(this);
-
-        // TODO Check for Google Play Services ( http://developer.android.com/training/location/geofencing.html )
 
         // Custom action bar that contains the "done" button for saving changes
         ActionBar actionBar = getSupportActionBar();
@@ -132,6 +137,19 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
         });
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Check for Google Play Services
+        int res = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this); if (res != ConnectionResult.SUCCESS) {
+            Dialog dialog = GooglePlayServicesUtil.getErrorDialog(res, this, REQUEST_INSTALL_PLAY_SERVICES, new DialogInterface.OnCancelListener() {
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    finish();
+                }
+            }); dialog.show();
+        }
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
