@@ -26,7 +26,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:visibility="invisible">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -36,6 +37,7 @@
         android:orientation="horizontal">
 
         <TextView
+            style="@style/TextAppearance.Toast"
             android:layout_width="0px"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
@@ -43,13 +45,12 @@
             android:gravity="right"
             android:padding="8dp"
             android:text="@string/addressInfo_list_geofencingOff"
-            android:textColor="#FFF"
-            style="@style/TextAppearance.Toast" />
+            android:textColor="#FFF" />
 
         <ImageView
+            android:id="@+id/imgArrowUp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginRight="20dp"
             android:paddingBottom="16dp"
             android:paddingTop="4dp"
             android:src="@drawable/arrow_up" />

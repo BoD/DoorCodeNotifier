@@ -23,25 +23,29 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <string name="app_name">Door Code Notifier</string>
 
+    <!-- Common -->
     <string name="common_unexpected">An unexpected error happened</string>
     <string name="common_confirm_delete">This item will be deleted</string>
 
-    <string name="action_add">Add</string>
+    <!-- Action -->
     <string name="action_delete">Delete</string>
     <string name="action_done">Done</string>
+    <string name="action_about">About…</string>
 
+
+    <!-- Addressinfo list -->
     <string name="addressInfo_list_code">Code #%1$d</string>
     <string name="addressInfo_list_chooseAddress">Which address?</string>
     <string name="addressInfo_list_add">Add</string>
-    <string name="addressInfo_list_geofencing">Track location</string>
     <string name="addressInfo_list_geofencingOn">Location tracking / notifications: <b>ON</b></string>
     <string name="addressInfo_list_geofencingOff">Location tracking / notifications: <b>OFF</b></string>
     <string name="addressInfo_list_empty">Empty!\nClick the <b>+</b> to add a door code.</string>
 
+    <!-- Addressinfo edit -->
     <string name="addressInfo_edit_loadError">Could not load this address</string>
     <string name="addressInfo_edit_title">Address information</string>
     <string name="addressInfo_edit_code_hint">Code</string>
@@ -51,6 +55,20 @@
     <string name="addressInfo_edit_couldNotGeocode">Could not locate the address</string>
     <string name="addressInfo_edit_emptyAddress">This field must not be empty</string>
 
+    <!-- Notification -->
     <string name="notification_action_sms_body">I\'m here</string>
+
+    <!-- About -->
+    <string name="about_authorCopyright" translatable="false" tools:ignore="TypographyOther">Copyright (C) 2014–2015 Benoit \'BoD\' Lubek.</string>
+    <string name="about_License" translatable="false">Licensed under the terms of the GNU General Public License.</string>
+    <string name="about_email_uri" translatable="false">mailto:BoD@JRAF.org</string>
+    <string name="about_email_text" translatable="false">BoD@JRAF.org</string>
+    <string name="about_web_uri" translatable="false">http://JRAF.org/android/</string>
+    <string name="about_web_text" translatable="false">JRAF.org/android</string>
+    <string name="about_sources_uri" translatable="false">https://github.com/BoD/DoorCodeNotifier/</string>
+    <string name="about_sources_text" translatable="false">Source code on Github</string>
+    <string name="about_shareText_subject">Checkout out this app!</string>
+    <string name="about_shareText_body">This app notifies you when you\'re near a friend\'s place, to show you their door code.\nCheck it out here:\nhttp://play.google.com/store/apps/details?id=%s</string>
+
 
 </resources>

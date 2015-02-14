@@ -38,7 +38,7 @@
     <application
         android:name=".handheld.app.Application"
         android:allowBackup="true"
-        android:icon="@drawable/ic_launcher"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/Theme.App">
 
@@ -62,6 +62,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- About -->
+        <activity
+            android:name="org.jraf.android.util.about.AboutActivity"
+            android:label="@string/about_title" />
 
         <!-- AddressInfo edit -->
         <activity

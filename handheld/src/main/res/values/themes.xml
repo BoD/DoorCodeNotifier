@@ -23,7 +23,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
   -->
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
 
     <style name="Theme.App.Base" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="android:windowContentOverlay">@drawable/ab_shadow</item>
@@ -42,6 +42,8 @@
         <item name="android:colorBackgroundCacheHint">@color/window_background</item>
 
         <item name="actionBarStyle">@style/Widget.App.ActionBar</item>
+
+        <item name="android:textColorLink">@color/primary</item>
     </style>
 
     <style name="Theme.App.Edit" >

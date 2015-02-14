@@ -101,8 +101,7 @@ public class AddressInfoEditActivity extends ActionBarActivity implements AlertD
         TextView txtTitle = (TextView) customActionBarView.findViewById(R.id.title);
         txtTitle.setText(getResources().getString(R.string.addressInfo_edit_title));
         // Show the custom action bar but hide the home icon and title
-        actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM,
-                ActionBar.DISPLAY_SHOW_CUSTOM | ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
+        actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM, ActionBar.DISPLAY_SHOW_CUSTOM | ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
         actionBar.setCustomView(customActionBarView);
 
         ButterKnife.inject(this);
@@ -137,8 +136,7 @@ public class AddressInfoEditActivity extends ActionBarActivity implements AlertD
                 AddressInfoEditActivity a = getActivity();
                 Uri addressUri = a.mAddressUri;
 
-                String[] projection = {
-                        ContactsContract.Data.CONTACT_ID, // 0
+                String[] projection = {ContactsContract.Data.CONTACT_ID, // 0
                         ContactsContract.Contacts.DISPLAY_NAME, // 1
                         ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, // 2
                         ContactsContract.Contacts.LOOKUP_KEY, // 3
@@ -199,7 +197,7 @@ public class AddressInfoEditActivity extends ActionBarActivity implements AlertD
         // Codes
         int i = 1;
         for (String code : mAddressInfo.codeList) {
-            final View codeView = getLayoutInflater().inflate(R.layout.addressinfo_edit_code, (ViewGroup) mConFields, false);
+            final View codeView = getLayoutInflater().inflate(R.layout.addressinfo_edit_code, mConFields, false);
 
 //            TextView txtTitle = (TextView) codeView.findViewById(R.id.txtTitle);
 //            if (mAddressInfo.codeList.size() == 1) {
@@ -228,7 +226,7 @@ public class AddressInfoEditActivity extends ActionBarActivity implements AlertD
 
         // If there are no codes, show an empty code EditView
         if (i == 1) {
-            final View codeView = getLayoutInflater().inflate(R.layout.addressinfo_edit_code, (ViewGroup) mConFields, false);
+            final View codeView = getLayoutInflater().inflate(R.layout.addressinfo_edit_code, mConFields, false);
 
             EditText edtValue = (EditText) codeView.findViewById(R.id.edtValue);
             codeView.findViewById(R.id.btnRemove).setOnClickListener(new View.OnClickListener() {
@@ -244,7 +242,7 @@ public class AddressInfoEditActivity extends ActionBarActivity implements AlertD
         }
 
         // Add code button
-        final View addCodeView = getLayoutInflater().inflate(R.layout.addressinfo_edit_addcode, (ViewGroup) mConFields, false);
+        final View addCodeView = getLayoutInflater().inflate(R.layout.addressinfo_edit_addcode, mConFields, false);
         addCodeView.findViewById(R.id.btnAddCode).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -254,7 +252,7 @@ public class AddressInfoEditActivity extends ActionBarActivity implements AlertD
         mConFields.addView(addCodeView);
 
         // Other info
-        View otherInfoView = getLayoutInflater().inflate(R.layout.addressinfo_edit_otherinfo, (ViewGroup) mConFields, false);
+        View otherInfoView = getLayoutInflater().inflate(R.layout.addressinfo_edit_otherinfo, mConFields, false);
         mEdtOtherInfo = (EditText) otherInfoView.findViewById(R.id.edtOtherInfo);
 
         otherInfoView.findViewById(R.id.btnOtherInfoClear).setOnClickListener(new View.OnClickListener() {
@@ -273,7 +271,7 @@ public class AddressInfoEditActivity extends ActionBarActivity implements AlertD
     }
 
     private void addCodeView() {
-        final View codeView = getLayoutInflater().inflate(R.layout.addressinfo_edit_code, (ViewGroup) mConFields, false);
+        final View codeView = getLayoutInflater().inflate(R.layout.addressinfo_edit_code, mConFields, false);
         EditText edtValue = (EditText) codeView.findViewById(R.id.edtValue);
         codeView.findViewById(R.id.btnRemove).setOnClickListener(new View.OnClickListener() {
             @Override

@@ -112,7 +112,7 @@ public class AddressInfoAdapter extends RecyclerView.Adapter<AddressInfoAdapter.
         // Codes
         int i = 1;
         for (String code : addressInfo.codeList) {
-            View codeView = mLayoutInflater.inflate(R.layout.addressinfo_list_item_code, (ViewGroup) holder.conFields, false);
+            View codeView = mLayoutInflater.inflate(R.layout.addressinfo_list_item_code, holder.conFields, false);
 
             TextView txtTitle = (TextView) codeView.findViewById(R.id.txtTitle);
             if (addressInfo.codeList.size() == 1) {
@@ -130,7 +130,7 @@ public class AddressInfoAdapter extends RecyclerView.Adapter<AddressInfoAdapter.
 
         // Other info
         if (addressInfo.otherInfo != null) {
-            View otherInfoView = mLayoutInflater.inflate(R.layout.addressinfo_list_item_otherinfo, (ViewGroup) holder.conFields, false);
+            View otherInfoView = mLayoutInflater.inflate(R.layout.addressinfo_list_item_otherinfo, holder.conFields, false);
             TextView txtValue = (TextView) otherInfoView.findViewById(R.id.txtValue);
             txtValue.setText(addressInfo.otherInfo);
             holder.conFields.addView(otherInfoView);

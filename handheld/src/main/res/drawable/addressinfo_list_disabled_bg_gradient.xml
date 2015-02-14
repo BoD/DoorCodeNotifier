@@ -29,5 +29,4 @@
         android:angle="270"
         android:endColor="@color/addressInfo_list_disabled_bg_end"
         android:startColor="@color/addressInfo_list_disabled_bg_start" />
-    />
 </shape>

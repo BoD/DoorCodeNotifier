@@ -34,6 +34,8 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -42,25 +44,31 @@ import android.provider.ContactsContract;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.SwitchCompat;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.widget.CompoundButton;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import org.jraf.android.dcn.BuildConfig;
 import org.jraf.android.dcn.R;
 import org.jraf.android.dcn.handheld.Constants;
 import org.jraf.android.dcn.handheld.app.addressinfo.edit.AddressInfoEditActivity;
 import org.jraf.android.dcn.handheld.app.geofencing.GeofencingService;
 import org.jraf.android.dcn.handheld.model.addressinfo.AddressInfo;
+import org.jraf.android.util.about.AboutActivityIntentBuilder;
 import org.jraf.android.util.async.Task;
 import org.jraf.android.util.async.TaskFragment;
 import org.jraf.android.util.dialog.AlertDialogFragment;
 import org.jraf.android.util.dialog.AlertDialogListener;
 import org.jraf.android.util.log.wrapper.Log;
 import org.jraf.android.util.string.StringUtil;
+import org.jraf.android.util.ui.UiUtil;
 
 import java.util.ArrayList;
 
@@ -75,6 +83,10 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
 
     @InjectView(R.id.conFencingDisabled)
     protected View mConGeofencingDisabled;
+
+    @InjectView(R.id.imgArrowUp)
+    protected View mImgArrowUp;
+
     private SwitchCompat mSwiGeofencing;
 
     @Override
@@ -83,26 +95,43 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
         setContentView(R.layout.addressinfo_list);
         ButterKnife.inject(this);
 
+        // TODO Check for Google Play Services ( http://developer.android.com/training/location/geofencing.html )
+
         // Custom action bar that contains the "done" button for saving changes
         ActionBar actionBar = getSupportActionBar();
         @SuppressLint("InflateParams") View customActionBarView = getLayoutInflater().inflate(R.layout.addressinfo_list_actionbar, null);
         mSwiGeofencing = (SwitchCompat) customActionBarView.findViewById(R.id.swiGeofencing);
         // Check it if enabled in prefs
         SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean enabled = preferenceManager.getBoolean(Constants.PREF_GEOFENCING_ENABLED, Constants.PREF_GEOFENCING_ENABLED_DEFAULT);
+        final boolean enabled = preferenceManager.getBoolean(Constants.PREF_GEOFENCING_ENABLED, Constants.PREF_GEOFENCING_ENABLED_DEFAULT);
         mSwiGeofencing.setChecked(enabled);
-        // Show disabled indicator if needed
-        if (enabled) {
-            mConGeofencingDisabled.setVisibility(View.GONE);
-        } else {
-            mConGeofencingDisabled.setVisibility(View.VISIBLE);
-        }
         actionBar.setDisplayShowCustomEnabled(true);
         actionBar.setCustomView(customActionBarView, new ActionBar.LayoutParams(Gravity.CENTER_VERTICAL | Gravity.RIGHT));
 
+        // Align the up arrow with the switch - this needs to be done in a viewTreeObserver otherwise it is too early
+        final View contentView = findViewById(android.R.id.content);
+        contentView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            public int mViewTreeObserverCount = 0;
 
-        // TODO Check for Google Play Services ( http://developer.android.com/training/location/geofencing.html )
+            @Override
+            public void onGlobalLayout() {
+                // The first call is too early, the switch hasn't been laid out yet, so do this only the second time
+                if (mViewTreeObserverCount > 0) {
+                    // Show disabled indicator if needed
+                    if (enabled) {
+                        mConGeofencingDisabled.setVisibility(View.GONE);
+                    } else {
+                        alignUpArrow(); mConGeofencingDisabled.setVisibility(View.VISIBLE);
+                    }
+                }
+
+                mViewTreeObserverCount++;
+                // Unregister self
+                if (mViewTreeObserverCount == 2) contentView.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+            }
+        });
     }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -114,9 +143,7 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-//            case R.id.action_add:
-//                onAddClicked();
-//                return true;
+            case R.id.action_about: onAboutClicked(); return true;
 
             default:
                 return super.onOptionsItemSelected(item);
@@ -139,6 +166,17 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
         intent.putExtra("finishActivityOnSaveCompleted", true); // see http://developer.android.com/training/contacts-provider/modify-data.html
 
         startActivityForResult(intent, REQUEST_CONTACT_PICK);
+    }
+
+    private void onAboutClicked() {
+        AboutActivityIntentBuilder builder = new AboutActivityIntentBuilder(); builder.setAppName(getString(R.string.app_name));
+        builder.setBuildDate(BuildConfig.BUILD_DATE); builder.setGitSha1(BuildConfig.GIT_SHA1);
+        builder.setAuthorCopyright(getString(R.string.about_authorCopyright)); builder.setLicense(getString(R.string.about_License));
+        builder.setShareTextSubject(getString(R.string.about_shareText_subject)); builder.setShareTextBody(getString(R.string.about_shareText_body));
+        builder.setBackgroundResId(R.drawable.about_bg); builder.addLink(getString(R.string.about_email_uri), getString(R.string.about_email_text));
+        builder.addLink(getString(R.string.about_web_uri), getString(R.string.about_web_text));
+        builder.addLink(getString(R.string.about_sources_uri), getString(R.string.about_sources_text)); builder.setIsLightIcons(true);
+        startActivity(builder.build(this));
     }
 
     @Override
@@ -388,7 +426,20 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
                 public void onAnimationRepeat(Animator animation) {}
             });
         } else {
-            mConGeofencingDisabled.setVisibility(View.VISIBLE); mConGeofencingDisabled.animate().alpha(1f).setListener(null);
+            mConGeofencingDisabled.setAlpha(0f); mConGeofencingDisabled.setVisibility(View.VISIBLE); mConGeofencingDisabled.post(new Runnable() {
+                @Override
+                public void run() {
+                    alignUpArrow(); mConGeofencingDisabled.animate().alpha(1f).setListener(null);
+                }
+            });
         }
+    }
+
+    private void alignUpArrow() {
+        Display display = getWindowManager().getDefaultDisplay(); Point size = new Point(); display.getSize(size); int displayWidth = size.x;
+
+        Rect switchLocation = UiUtil.getLocationInWindow(mSwiGeofencing); Log.d("switchLocation=" + switchLocation);
+        int diff = displayWidth - switchLocation.right; LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) mImgArrowUp.getLayoutParams();
+        layoutParams.rightMargin = diff + mSwiGeofencing.getWidth() / 2 - mImgArrowUp.getWidth() / 2; mImgArrowUp.setLayoutParams(layoutParams);
     }
 }
