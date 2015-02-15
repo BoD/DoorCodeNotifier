@@ -30,6 +30,8 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
@@ -44,7 +46,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class AddressInfo {
+public class AddressInfo implements Parcelable {
     public static final String SEPARATOR = "\n--\n";
     private static final Pattern PATTERN_CODE = Pattern.compile("Code( \\d+)?: (.+)");
     private static final Pattern PATTERN_COORDINATES = Pattern.compile("Coordinates: (-?\\d+), (-?\\d+)");
@@ -65,6 +67,8 @@ public class AddressInfo {
      */
     @Nullable
     public String otherInfo;
+
+    public AddressInfo() {}
 
     public static AddressInfo parseAugmented(String sourceFormattedAddress) throws ParseException {
         AddressInfo res = new AddressInfo();
@@ -211,4 +215,35 @@ public class AddressInfo {
         }
         return null;
     }
+
+
+    //region Parcelable implementation.
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeParcelable(contactInfo, flags); dest.writeParcelable(uri, 0); dest.writeString(formattedAddress); dest.writeDouble(latitude);
+        dest.writeDouble(longitude); dest.writeList(codeList); dest.writeString(otherInfo);
+    }
+
+    private AddressInfo(Parcel in) {
+        contactInfo = in.readParcelable(ContactInfo.class.getClassLoader()); uri = in.readParcelable(Uri.class.getClassLoader());
+        formattedAddress = in.readString(); latitude = in.readDouble(); longitude = in.readDouble(); codeList = new ArrayList<>();
+        in.readList(codeList, String.class.getClassLoader()); otherInfo = in.readString();
+    }
+
+    public static final Creator<AddressInfo> CREATOR = new Creator<AddressInfo>() {
+        public AddressInfo createFromParcel(Parcel source) {
+            return new AddressInfo(source);
+        }
+
+        public AddressInfo[] newArray(int size) {
+            return new AddressInfo[size];
+        }
+    };
+    //endregion
 }

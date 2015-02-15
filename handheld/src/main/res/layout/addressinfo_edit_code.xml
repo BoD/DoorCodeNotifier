@@ -38,6 +38,7 @@
         android:fontFamily="sans-serif-thin"
         android:hint="@string/addressInfo_edit_code_hint"
         android:inputType="textVisiblePassword"
+        android:saveEnabled="false"
         android:textSize="64sp" />
 
     <ImageView

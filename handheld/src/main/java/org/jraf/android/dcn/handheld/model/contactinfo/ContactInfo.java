@@ -25,10 +25,42 @@
 package org.jraf.android.dcn.handheld.model.contactinfo;
 
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 
-public class ContactInfo {
+public class ContactInfo implements Parcelable {
     public Uri uri;
     public Uri contentLookupUri;
-
     public String displayName;
+
+    public ContactInfo() {}
+
+
+    //region Parcelable implementation.
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeParcelable(uri, 0); dest.writeParcelable(contentLookupUri, 0); dest.writeString(displayName);
+    }
+
+    private ContactInfo(Parcel in) {
+        uri = in.readParcelable(Uri.class.getClassLoader()); contentLookupUri = in.readParcelable(Uri.class.getClassLoader()); displayName = in.readString();
+    }
+
+    public static final Creator<ContactInfo> CREATOR = new Creator<ContactInfo>() {
+        public ContactInfo createFromParcel(Parcel source) {
+            return new ContactInfo(source);
+        }
+
+        public ContactInfo[] newArray(int size) {
+            return new ContactInfo[size];
+        }
+    };
+
+    //endregion
 }

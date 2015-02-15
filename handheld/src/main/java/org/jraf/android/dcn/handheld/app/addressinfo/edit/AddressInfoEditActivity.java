@@ -106,8 +106,16 @@ public class AddressInfoEditActivity extends ActionBarActivity implements AlertD
 
         ButterKnife.inject(this);
 
-        mAddressUri = getIntent().getData();
-        loadData();
+        mAddressUri = getIntent().getData(); if (savedInstanceState != null) {
+            mAddressInfo = savedInstanceState.getParcelable("mAddressInfo"); onDataLoaded();
+        } else {
+            loadData();
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        fillAddressInfo(); outState.putParcelable("mAddressInfo", mAddressInfo); super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -199,13 +207,6 @@ public class AddressInfoEditActivity extends ActionBarActivity implements AlertD
         for (String code : mAddressInfo.codeList) {
             final View codeView = getLayoutInflater().inflate(R.layout.addressinfo_edit_code, mConFields, false);
 
-//            TextView txtTitle = (TextView) codeView.findViewById(R.id.txtTitle);
-//            if (mAddressInfo.codeList.size() == 1) {
-//                txtTitle.setVisibility(View.GONE);
-//            } else {
-//                txtTitle.setText(getString(R.string.addressinfo_list_code, i));
-//            }
-
             EditText edtValue = (EditText) codeView.findViewById(R.id.edtValue);
             edtValue.append(code);
 
@@ -289,25 +290,10 @@ public class AddressInfoEditActivity extends ActionBarActivity implements AlertD
     }
 
     private void onDoneClicked() {
-        // Code list
-        int childCount = mConFields.getChildCount();
-        List<String> codeList = new ArrayList<>(childCount);
-        for (int i = 0; i < childCount - 2; i++) {
-            View child = mConFields.getChildAt(i);
-            EditText edtValue = (EditText) child.findViewById(R.id.edtValue);
-            String code = edtValue.getText().toString().trim();
-            if (!code.isEmpty()) codeList.add(code);
-        }
-        mAddressInfo.codeList = codeList;
+        fillAddressInfo();
 
-        // Other info
-        mAddressInfo.otherInfo = mEdtOtherInfo.getText().toString().trim();
-
-        // Formatted address
-        final String formattedAddress = mEdtFormattedAddress.getText().toString().trim();
-        mAddressInfo.formattedAddress = formattedAddress;
         // Disallow empty address
-        if (TextUtils.isEmpty(formattedAddress)) {
+        if (TextUtils.isEmpty(mAddressInfo.formattedAddress)) {
             mEdtFormattedAddress.setError(getString(R.string.addressInfo_edit_emptyAddress));
             return;
         }
@@ -319,11 +305,10 @@ public class AddressInfoEditActivity extends ActionBarActivity implements AlertD
 
                 // Geocoding
                 Log.d("Geocoding...");
-                Geocoder geocoder = new Geocoder(a);
-                List<Address> addressList = geocoder.getFromLocationName(formattedAddress, 1);
+                Geocoder geocoder = new Geocoder(a); List<Address> addressList = geocoder.getFromLocationName(mAddressInfo.formattedAddress, 1);
                 Log.d("addressList=" + addressList);
                 if (addressList == null || addressList.isEmpty()) {
-                    Log.w("Could not geocode address '" + formattedAddress + "'");
+                    Log.w("Could not geocode address '" + mAddressInfo.formattedAddress + "'");
                     throw new Exception("Could not geocode");
                 }
                 Address address = addressList.get(0);
@@ -344,6 +329,20 @@ public class AddressInfoEditActivity extends ActionBarActivity implements AlertD
                 a.mEdtFormattedAddress.setError(a.getString(R.string.addressInfo_edit_couldNotGeocode));
             }
         }).execute(getSupportFragmentManager());
+    }
+
+    private void fillAddressInfo() {
+        // Code list
+        int childCount = mConFields.getChildCount(); List<String> codeList = new ArrayList<>(childCount); for (int i = 0; i < childCount - 2; i++) {
+            View child = mConFields.getChildAt(i); EditText edtValue = (EditText) child.findViewById(R.id.edtValue);
+            String code = edtValue.getText().toString().trim(); if (!code.isEmpty()) codeList.add(code);
+        } mAddressInfo.codeList = codeList;
+
+        // Other info
+        mAddressInfo.otherInfo = mEdtOtherInfo.getText().toString().trim();
+
+        // Formatted address
+        mAddressInfo.formattedAddress = mEdtFormattedAddress.getText().toString().trim();
     }
 
     private void onDeleteClicked() {

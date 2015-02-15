@@ -83,8 +83,9 @@
                 android:gravity="top"
                 android:hint="@string/addressInfo_edit_formattedAddress_hint"
                 android:inputType="textPostalAddress|textMultiLine"
-                android:minLines="2"
                 android:maxLines="4"
+                android:minLines="2"
+                android:saveEnabled="false"
                 android:textSize="@dimen/text_medium"
                 tools:text="19 avenue de Choisy\n75013 PARIS\nFrance" />
 

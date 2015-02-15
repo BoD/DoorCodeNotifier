@@ -30,6 +30,7 @@
     android:orientation="horizontal"
     android:paddingLeft="4dp"
     android:paddingRight="4dp">
+
     <EditText
         android:id="@+id/edtOtherInfo"
         android:layout_width="0px"
@@ -38,6 +39,7 @@
         android:fontFamily="sans-serif"
         android:hint="@string/addressInfo_edit_otherInfo_hint"
         android:paddingBottom="8dp"
+        android:saveEnabled="false"
         android:textSize="@dimen/text_large"
         />
 
