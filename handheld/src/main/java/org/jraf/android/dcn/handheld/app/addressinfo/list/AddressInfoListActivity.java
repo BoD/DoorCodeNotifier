@@ -43,6 +43,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
+import android.provider.Settings;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.SwitchCompat;
@@ -66,6 +67,7 @@ import org.jraf.android.dcn.handheld.Constants;
 import org.jraf.android.dcn.handheld.app.addressinfo.edit.AddressInfoEditActivity;
 import org.jraf.android.dcn.handheld.app.geofencing.GeofencingService;
 import org.jraf.android.dcn.handheld.model.addressinfo.AddressInfo;
+import org.jraf.android.dcn.handheld.util.picasso.location.LocationUtil;
 import org.jraf.android.util.about.AboutActivityIntentBuilder;
 import org.jraf.android.util.async.Task;
 import org.jraf.android.util.async.TaskFragment;
@@ -87,6 +89,7 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
     private static final int REQUEST_INSTALL_PLAY_SERVICES = 1;
 
     private static final int DIALOG_CHOOSE_ADDRESS_TO_EDIT = 0;
+    private static final int DIALOG_LOCATION_SETTINGS = 1;
 
     @InjectView(R.id.conFencingDisabled)
     protected View mConGeofencingDisabled;
@@ -148,6 +151,13 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
                     finish();
                 }
             }); dialog.show();
+        }
+
+        // Check for location settings
+        if (!LocationUtil.isLocationEnabled(this)) {
+            AlertDialogFragment dialog = AlertDialogFragment.newInstance(DIALOG_LOCATION_SETTINGS);
+            dialog.setMessage(R.string.addressInfo_list_locationDialog_message); dialog.setPositiveButton(R.string.addressInfo_list_locationDialog_positive);
+            dialog.setNegativeButton(R.string.addressInfo_list_locationDialog_negative); dialog.show(getSupportFragmentManager());
         }
     }
 
@@ -360,9 +370,14 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
     /*
      * AlertDialogListener implementation.
      */
+    //region
 
     @Override
-    public void onClickPositive(int tag, Object payload) {}
+    public void onClickPositive(int tag, Object payload) {
+        switch (tag) {
+            case DIALOG_LOCATION_SETTINGS: startActivity(Intent.createChooser(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), null)); break;
+        }
+    }
 
     @Override
     public void onClickNegative(int tag, Object payload) {}
@@ -381,10 +396,13 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
         }
     }
 
+    //endregion
+
 
     /*
      * AddressInfoCallbacks implementation.
      */
+    //region
 
     @Override
     public void onAddressInfoClicked(AddressInfo addressInfo) {
@@ -420,6 +438,8 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
             }
         });
     }
+
+    //endregion
 
 
     private void onGeofencingCheckedChanged(boolean isChecked) {

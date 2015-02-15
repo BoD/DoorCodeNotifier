@@ -44,6 +44,9 @@
     <string name="addressInfo_list_geofencingOn">Location tracking / notifications: <b>ON</b></string>
     <string name="addressInfo_list_geofencingOff">Location tracking / notifications: <b>OFF</b></string>
     <string name="addressInfo_list_empty">Empty!\nClick the <b>+</b> to add a door code.</string>
+    <string name="addressInfo_list_locationDialog_message">Location is currently disabled.\nWould you like to enable it?</string>
+    <string name="addressInfo_list_locationDialog_positive">Yes</string>
+    <string name="addressInfo_list_locationDialog_negative">Not now</string>
 
     <!-- Addressinfo edit -->
     <string name="addressInfo_edit_loadError">Could not load this address</string>
