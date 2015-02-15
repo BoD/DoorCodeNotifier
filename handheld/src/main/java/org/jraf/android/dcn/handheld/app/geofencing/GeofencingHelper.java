@@ -68,8 +68,12 @@ public class GeofencingHelper {
         // Blocking
         ConnectionResult connectionResult = mGoogleApiClient.blockingConnect();
         if (!connectionResult.isSuccess()) {
-            // TODO handle failures
+            Log.w("Could not connect to Google Api Client (error code: " + connectionResult.getErrorCode() + ")"); mGoogleApiClient = null;
         }
+    }
+
+    private boolean isConnected() {
+        return mGoogleApiClient != null;
     }
 
     public synchronized void disconnect() {
@@ -80,14 +84,14 @@ public class GeofencingHelper {
 
     @Background(Background.Type.NETWORK)
     public void removeAllGeofences() {
-        Log.d();
+        Log.d(); if (!isConnected()) return;
         LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, getPendingIntent()).await();
         Log.d("All geofences removed");
     }
 
     @Background(Background.Type.NETWORK)
     public void addGeofences(List<Geofence> geofenceList) {
-        Log.d();
+        Log.d(); if (!isConnected()) return;
         if (geofenceList.isEmpty()) {
             Log.d("List of geofences is empty: do nothing");
             return;
