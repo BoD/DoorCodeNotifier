@@ -24,6 +24,8 @@
  */
 package org.jraf.android.dcn.handheld.app.addressinfo.list;
 
+import java.util.ArrayList;
+
 import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -45,7 +47,7 @@ import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
 import android.view.Display;
 import android.view.Gravity;
@@ -57,9 +59,6 @@ import android.view.ViewTreeObserver;
 import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 
 import org.jraf.android.dcn.BuildConfig;
 import org.jraf.android.dcn.R;
@@ -77,24 +76,25 @@ import org.jraf.android.util.log.wrapper.Log;
 import org.jraf.android.util.string.StringUtil;
 import org.jraf.android.util.ui.UiUtil;
 
-import java.util.ArrayList;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 
+import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.InjectView;
 import butterknife.OnClick;
 
 
-public class AddressInfoListActivity extends ActionBarActivity implements AlertDialogListener, AddressInfoCallbacks {
+public class AddressInfoListActivity extends AppCompatActivity implements AlertDialogListener, AddressInfoCallbacks {
     private static final int REQUEST_CONTACT_PICK = 0;
     private static final int REQUEST_INSTALL_PLAY_SERVICES = 1;
 
     private static final int DIALOG_CHOOSE_ADDRESS_TO_EDIT = 0;
     private static final int DIALOG_LOCATION_SETTINGS = 1;
 
-    @InjectView(R.id.conFencingDisabled)
+    @Bind(R.id.conFencingDisabled)
     protected View mConGeofencingDisabled;
 
-    @InjectView(R.id.imgArrowUp)
+    @Bind(R.id.imgArrowUp)
     protected View mImgArrowUp;
 
     private SwitchCompat mSwiGeofencing;
@@ -103,7 +103,7 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.addressinfo_list);
-        ButterKnife.inject(this);
+        ButterKnife.bind(this);
 
         // Custom action bar that contains the "done" button for saving changes
         ActionBar actionBar = getSupportActionBar();
@@ -290,7 +290,7 @@ public class AddressInfoListActivity extends ActionBarActivity implements AlertD
     private void startAddressInfoEditActivity(Uri uri) {
         Intent intent = new Intent(this, AddressInfoEditActivity.class);
         intent.setData(uri);
-        this.startActivity(intent);
+        startActivity(intent);
     }
 
     private void createAddressAndEdit(long contactId) {

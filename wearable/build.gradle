@@ -2,16 +2,16 @@ apply plugin: 'com.android.application'
 
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion '21.1.2'
+    compileSdkVersion 23
+    buildToolsVersion '23.0.0'
 
     defaultConfig {
         applicationId "org.jraf.android.dcn"
         minSdkVersion 20
-        targetSdkVersion 21
+        targetSdkVersion 23
         versionCode buildNumber
         versionName buildProperties['versionName']
-        resConfigs "en", "fr"
+        resConfigs 'en', 'fr'
 
         // For now we enable strict mode for all the configs
         buildConfigField 'boolean', 'STRICT_MODE', 'true'
@@ -37,6 +37,6 @@ android {
 }
 
 dependencies {
-    compile 'com.google.android.support:wearable:1.1.0'
+    compile 'com.google.android.support:wearable:1.3.0'
     compile project(':common')
 }

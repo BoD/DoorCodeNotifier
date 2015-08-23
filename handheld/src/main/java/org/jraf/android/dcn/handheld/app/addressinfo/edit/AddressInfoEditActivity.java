@@ -24,6 +24,9 @@
  */
 package org.jraf.android.dcn.handheld.app.addressinfo.edit;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.animation.LayoutTransition;
 import android.annotation.SuppressLint;
 import android.content.ContentUris;
@@ -34,7 +37,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -46,8 +49,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.squareup.picasso.Picasso;
-
 import org.jraf.android.dcn.R;
 import org.jraf.android.dcn.handheld.model.addressinfo.AddressInfo;
 import org.jraf.android.dcn.handheld.util.picasso.RoundTransformation;
@@ -57,25 +58,24 @@ import org.jraf.android.util.dialog.AlertDialogFragment;
 import org.jraf.android.util.dialog.AlertDialogListener;
 import org.jraf.android.util.log.wrapper.Log;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.squareup.picasso.Picasso;
 
+import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.InjectView;
 
-public class AddressInfoEditActivity extends ActionBarActivity implements AlertDialogListener {
+public class AddressInfoEditActivity extends AppCompatActivity implements AlertDialogListener {
     private static final int DIALOG_DELETE = 0;
 
-    @InjectView(R.id.txtContactDisplayName)
+    @Bind(R.id.txtContactDisplayName)
     protected TextView mTxtContactDisplayName;
 
-    @InjectView(R.id.edtFormattedAddress)
+    @Bind(R.id.edtFormattedAddress)
     protected EditText mEdtFormattedAddress;
 
-    @InjectView(R.id.imgPhoto)
+    @Bind(R.id.imgPhoto)
     protected ImageView mImgPhoto;
 
-    @InjectView(R.id.conFields)
+    @Bind(R.id.conFields)
     protected ViewGroup mConFields;
 
     private EditText mEdtOtherInfo;
@@ -104,7 +104,7 @@ public class AddressInfoEditActivity extends ActionBarActivity implements AlertD
         actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM, ActionBar.DISPLAY_SHOW_CUSTOM | ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
         actionBar.setCustomView(customActionBarView);
 
-        ButterKnife.inject(this);
+        ButterKnife.bind(this);
 
         mAddressUri = getIntent().getData(); if (savedInstanceState != null) {
             mAddressInfo = savedInstanceState.getParcelable("mAddressInfo"); onDataLoaded();

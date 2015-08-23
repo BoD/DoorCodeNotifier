@@ -24,6 +24,9 @@
  */
 package org.jraf.android.dcn.handheld.app.addressinfo.list;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.content.Context;
 import android.graphics.drawable.StateListDrawable;
 import android.os.Build;
@@ -36,17 +39,14 @@ import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Picasso;
-
 import org.jraf.android.dcn.R;
 import org.jraf.android.dcn.handheld.model.addressinfo.AddressInfo;
 import org.jraf.android.dcn.handheld.util.picasso.RoundTransformation;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.squareup.picasso.Picasso;
 
+import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.InjectView;
 
 
 public class AddressInfoAdapter extends RecyclerView.Adapter<AddressInfoAdapter.ViewHolder> {
@@ -57,21 +57,21 @@ public class AddressInfoAdapter extends RecyclerView.Adapter<AddressInfoAdapter.
 
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        @InjectView(R.id.txtContactDisplayName)
+        @Bind(R.id.txtContactDisplayName)
         public TextView txtContactDisplayName;
 
-        @InjectView(R.id.txtFormattedAddress)
+        @Bind(R.id.txtFormattedAddress)
         public TextView txtFormattedAddress;
 
-        @InjectView(R.id.imgPhoto)
+        @Bind(R.id.imgPhoto)
         public ImageView imgPhoto;
 
-        @InjectView(R.id.conFields)
+        @Bind(R.id.conFields)
         public ViewGroup conFields;
 
         public ViewHolder(View v, Context context) {
             super(v);
-            ButterKnife.inject(this, v);
+            ButterKnife.bind(this, v);
 
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
                 // HACK!  Adding fades to state list, so it looks nicer than the theme default - only for pre lollipop

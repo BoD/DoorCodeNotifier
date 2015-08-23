@@ -24,6 +24,8 @@
  */
 package org.jraf.android.dcn.handheld.app.addressinfo.list;
 
+import java.util.List;
+
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.LoaderManager;
@@ -39,16 +41,14 @@ import org.jraf.android.dcn.R;
 import org.jraf.android.dcn.handheld.model.addressinfo.AddressInfo;
 import org.jraf.android.util.app.base.BaseFragment;
 
-import java.util.List;
-
+import butterknife.Bind;
 import butterknife.ButterKnife;
-import butterknife.InjectView;
 
 public class AddressInfoListFragment extends BaseFragment<AddressInfoCallbacks> implements LoaderManager.LoaderCallbacks<List<AddressInfo>> {
-    @InjectView(R.id.rclList)
+    @Bind(R.id.rclList)
     protected RecyclerView mRclList;
 
-    @InjectView(R.id.txtEmpty)
+    @Bind(R.id.txtEmpty)
     protected TextView mTxtEmpty;
 
     private AddressInfoAdapter mAdapter;
@@ -56,7 +56,7 @@ public class AddressInfoListFragment extends BaseFragment<AddressInfoCallbacks> 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View res = inflater.inflate(R.layout.addressinfo_list_list, container, false);
-        ButterKnife.inject(this, res);
+        ButterKnife.bind(this, res);
         mRclList.setHasFixedSize(true);
         mRclList.setLayoutManager(new LinearLayoutManager(getActivity()));
 
