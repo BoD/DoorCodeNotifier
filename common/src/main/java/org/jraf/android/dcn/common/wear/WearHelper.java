@@ -24,11 +24,20 @@
  */
 package org.jraf.android.dcn.common.wear;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.HashSet;
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.annotation.Nullable;
+import android.support.annotation.WorkerThread;
+
+import org.jraf.android.util.log.wrapper.Log;
+import org.jraf.android.util.parcelable.ParcelableUtil;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -40,15 +49,6 @@ import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
-
-import org.jraf.android.util.annotation.Background;
-import org.jraf.android.util.log.wrapper.Log;
-import org.jraf.android.util.parcelable.ParcelableUtil;
-
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.HashSet;
 
 /**
  * Helper singleton class to deal with the wear APIs.<br/>
@@ -80,7 +80,7 @@ public class WearHelper {
         return INSTANCE;
     }
 
-    @Background(Background.Type.NETWORK)
+    @WorkerThread
     public synchronized void connect(Context context) {
         Log.d();
         if (mGoogleApiClient != null) {
@@ -103,7 +103,7 @@ public class WearHelper {
         mGoogleApiClient = null;
     }
 
-    @Background(Background.Type.NETWORK)
+    @WorkerThread
     public void putNotification(String title, String textShort, String textLong, @Nullable Bitmap photo, Uri contactUri, @Nullable String phoneNumber) {
         Log.d();
         // First remove any old notification
@@ -123,7 +123,7 @@ public class WearHelper {
         Wearable.DataApi.putDataItem(mGoogleApiClient, request).await();
     }
 
-    @Background(Background.Type.NETWORK)
+    @WorkerThread
     public void removeNotification() {
         Log.d();
         Wearable.DataApi.deleteDataItems(mGoogleApiClient, createUri(PATH_NOTIFICATION)).await();
@@ -134,7 +134,7 @@ public class WearHelper {
      * Messaging.
      */
 
-    @Background(Background.Type.NETWORK)
+    @WorkerThread
     public void sendMessage(final String path, @Nullable final byte[] payload) {
         Log.d("path=" + path);
         HashSet<String> results = new HashSet<>();
@@ -144,12 +144,12 @@ public class WearHelper {
         }
     }
 
-    @Background(Background.Type.NETWORK)
+    @WorkerThread
     public void sendMessageShowContact(Uri uri) {
         byte[] payload = ParcelableUtil.parcel(uri); sendMessage(PATH_NOTIFICATION_ACTION_SHOW_CONTACT, payload);
     }
 
-    @Background(Background.Type.NETWORK)
+    @WorkerThread
     public void sendMessageCall(String phoneNumber) {
         byte[] payload = null;
         try {
@@ -160,7 +160,7 @@ public class WearHelper {
         sendMessage(PATH_NOTIFICATION_ACTION_CALL, payload);
     }
 
-    @Background(Background.Type.NETWORK)
+    @WorkerThread
     public void sendMessageSms(String phoneNumber) {
         byte[] payload = null;
         try {
@@ -186,7 +186,7 @@ public class WearHelper {
         return Asset.createFromBytes(byteStream.toByteArray());
     }
 
-    @Background(Background.Type.NETWORK)
+    @WorkerThread
     public Bitmap loadBitmapFromAsset(Asset asset) {
         DataApi.GetFdForAssetResult fd = Wearable.DataApi.getFdForAsset(mGoogleApiClient, asset).await();
         InputStream inputStream = fd.getInputStream();

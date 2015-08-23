@@ -24,6 +24,12 @@
  */
 package org.jraf.android.dcn.handheld.model.addressinfo;
 
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -34,17 +40,11 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.ContactsContract;
 import android.support.annotation.Nullable;
+import android.support.annotation.WorkerThread;
 import android.text.TextUtils;
 
 import org.jraf.android.dcn.handheld.model.contactinfo.ContactInfo;
-import org.jraf.android.util.annotation.Background;
 import org.jraf.android.util.log.wrapper.Log;
-
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class AddressInfo implements Parcelable {
     public static final String SEPARATOR = "\n--\n";
@@ -126,7 +126,7 @@ public class AddressInfo implements Parcelable {
         return formattedAddress.contains(SEPARATOR);
     }
 
-    @Background(Background.Type.DISK)
+    @WorkerThread
     public void persist(Context context) {
         Log.d();
         // Formatted address
@@ -181,7 +181,7 @@ public class AddressInfo implements Parcelable {
     }
 
     @Nullable
-    @Background(Background.Type.DISK)
+    @WorkerThread
     public Bitmap getContactPhoto(Context context) {
         Uri photoUri = Uri.withAppendedPath(contactInfo.uri, ContactsContract.Contacts.Photo.CONTENT_DIRECTORY);
         String[] projection = {ContactsContract.Contacts.Photo.PHOTO};
@@ -199,7 +199,7 @@ public class AddressInfo implements Parcelable {
     }
 
     @Nullable
-    @Background(Background.Type.DISK)
+    @WorkerThread
     public String getContactPhoneNumber(Context context) {
         Uri dataUri = Uri.withAppendedPath(contactInfo.uri, ContactsContract.Contacts.Data.CONTENT_DIRECTORY);
         String[] projection = {ContactsContract.CommonDataKinds.Phone.NUMBER};

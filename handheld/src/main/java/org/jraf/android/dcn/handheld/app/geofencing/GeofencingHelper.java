@@ -24,20 +24,20 @@
  */
 package org.jraf.android.dcn.handheld.app.geofencing;
 
+import java.util.List;
+
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.WorkerThread;
+
+import org.jraf.android.util.log.wrapper.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
-
-import org.jraf.android.util.annotation.Background;
-import org.jraf.android.util.log.wrapper.Log;
-
-import java.util.List;
 
 /**
  * Helper singleton class to deal with the geofencing APIs.<br/>
@@ -55,7 +55,7 @@ public class GeofencingHelper {
         return INSTANCE;
     }
 
-    @Background(Background.Type.NETWORK)
+    @WorkerThread
     public synchronized void connect(Context context) {
         Log.d();
         if (mGoogleApiClient != null) {
@@ -82,14 +82,14 @@ public class GeofencingHelper {
         mGoogleApiClient = null;
     }
 
-    @Background(Background.Type.NETWORK)
+    @WorkerThread
     public void removeAllGeofences() {
         Log.d(); if (!isConnected()) return;
         LocationServices.GeofencingApi.removeGeofences(mGoogleApiClient, getPendingIntent()).await();
         Log.d("All geofences removed");
     }
 
-    @Background(Background.Type.NETWORK)
+    @WorkerThread
     public void addGeofences(List<Geofence> geofenceList) {
         Log.d(); if (!isConnected()) return;
         if (geofenceList.isEmpty()) {
