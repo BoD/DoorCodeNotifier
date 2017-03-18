@@ -1,7 +1,7 @@
-# Edit and save this file to a file named build.properties.
 versionName=1.0.0
-key-store=/mnt/z/docs/devkeys/android_release_key.keystore
-key-store-password=P4ssw0Rd
-key-alias=android_release_key
-key-alias-password=P4ssw0Rd
-deploy-folder=/mnt/z/s/apache_www/static/tmp/
+signingStoreFile=/home/jsmith/devkeys/android_release_key.keystore
+signingStorePassword=changeme
+signingKeyAlias=android_release_key
+signingKeyPassword=changeme
+deployFolder=/home/deployed/public
+enableFabric=false

@@ -49,6 +49,11 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.squareup.picasso.Picasso;
+
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+
 import org.jraf.android.dcn.R;
 import org.jraf.android.dcn.handheld.model.addressinfo.AddressInfo;
 import org.jraf.android.dcn.handheld.util.picasso.RoundTransformation;
@@ -56,26 +61,21 @@ import org.jraf.android.util.async.Task;
 import org.jraf.android.util.async.TaskFragment;
 import org.jraf.android.util.dialog.AlertDialogFragment;
 import org.jraf.android.util.dialog.AlertDialogListener;
-import org.jraf.android.util.log.wrapper.Log;
-
-import com.squareup.picasso.Picasso;
-
-import butterknife.Bind;
-import butterknife.ButterKnife;
+import org.jraf.android.util.log.Log;
 
 public class AddressInfoEditActivity extends AppCompatActivity implements AlertDialogListener {
     private static final int DIALOG_DELETE = 0;
 
-    @Bind(R.id.txtContactDisplayName)
+    @InjectView(R.id.txtContactDisplayName)
     protected TextView mTxtContactDisplayName;
 
-    @Bind(R.id.edtFormattedAddress)
+    @InjectView(R.id.edtFormattedAddress)
     protected EditText mEdtFormattedAddress;
 
-    @Bind(R.id.imgPhoto)
+    @InjectView(R.id.imgPhoto)
     protected ImageView mImgPhoto;
 
-    @Bind(R.id.conFields)
+    @InjectView(R.id.conFields)
     protected ViewGroup mConFields;
 
     private EditText mEdtOtherInfo;
@@ -104,10 +104,12 @@ public class AddressInfoEditActivity extends AppCompatActivity implements AlertD
         actionBar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM, ActionBar.DISPLAY_SHOW_CUSTOM | ActionBar.DISPLAY_SHOW_HOME | ActionBar.DISPLAY_SHOW_TITLE);
         actionBar.setCustomView(customActionBarView);
 
-        ButterKnife.bind(this);
+        ButterKnife.inject(this);
 
-        mAddressUri = getIntent().getData(); if (savedInstanceState != null) {
-            mAddressInfo = savedInstanceState.getParcelable("mAddressInfo"); onDataLoaded();
+        mAddressUri = getIntent().getData();
+        if (savedInstanceState != null) {
+            mAddressInfo = savedInstanceState.getParcelable("mAddressInfo");
+            onDataLoaded();
         } else {
             loadData();
         }
@@ -115,7 +117,9 @@ public class AddressInfoEditActivity extends AppCompatActivity implements AlertD
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
-        fillAddressInfo(); outState.putParcelable("mAddressInfo", mAddressInfo); super.onSaveInstanceState(outState);
+        fillAddressInfo();
+        outState.putParcelable("mAddressInfo", mAddressInfo);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -305,7 +309,8 @@ public class AddressInfoEditActivity extends AppCompatActivity implements AlertD
 
                 // Geocoding
                 Log.d("Geocoding...");
-                Geocoder geocoder = new Geocoder(a); List<Address> addressList = geocoder.getFromLocationName(mAddressInfo.formattedAddress, 1);
+                Geocoder geocoder = new Geocoder(a);
+                List<Address> addressList = geocoder.getFromLocationName(mAddressInfo.formattedAddress, 1);
                 Log.d("addressList=" + addressList);
                 if (addressList == null || addressList.isEmpty()) {
                     Log.w("Could not geocode address '" + mAddressInfo.formattedAddress + "'");
@@ -333,10 +338,15 @@ public class AddressInfoEditActivity extends AppCompatActivity implements AlertD
 
     private void fillAddressInfo() {
         // Code list
-        int childCount = mConFields.getChildCount(); List<String> codeList = new ArrayList<>(childCount); for (int i = 0; i < childCount - 2; i++) {
-            View child = mConFields.getChildAt(i); EditText edtValue = (EditText) child.findViewById(R.id.edtValue);
-            String code = edtValue.getText().toString().trim(); if (!code.isEmpty()) codeList.add(code);
-        } mAddressInfo.codeList = codeList;
+        int childCount = mConFields.getChildCount();
+        List<String> codeList = new ArrayList<>(childCount);
+        for (int i = 0; i < childCount - 2; i++) {
+            View child = mConFields.getChildAt(i);
+            EditText edtValue = (EditText) child.findViewById(R.id.edtValue);
+            String code = edtValue.getText().toString().trim();
+            if (!code.isEmpty()) codeList.add(code);
+        }
+        mAddressInfo.codeList = codeList;
 
         // Other info
         mAddressInfo.otherInfo = mEdtOtherInfo.getText().toString().trim();
@@ -346,11 +356,11 @@ public class AddressInfoEditActivity extends AppCompatActivity implements AlertD
     }
 
     private void onDeleteClicked() {
-        AlertDialogFragment alertDialogFragment = AlertDialogFragment.newInstance(DIALOG_DELETE);
-        alertDialogFragment.setMessage(R.string.common_confirm_delete);
-        alertDialogFragment.setNegativeButton(android.R.string.cancel);
-        alertDialogFragment.setPositiveButton(android.R.string.ok);
-        alertDialogFragment.show(getSupportFragmentManager());
+        AlertDialogFragment.newInstance(DIALOG_DELETE)
+                .message(R.string.common_confirm_delete)
+                .negativeButton(android.R.string.cancel)
+                .positiveButton(android.R.string.ok)
+                .show(this);
     }
 
     private void delete() {
@@ -374,15 +384,13 @@ public class AddressInfoEditActivity extends AppCompatActivity implements AlertD
      */
 
     @Override
-    public void onClickPositive(int tag, Object payload) {
+    public void onDialogClickPositive(int tag, Object payload) {
         delete();
     }
 
     @Override
-    public void onClickNegative(int tag, Object payload) {
-    }
+    public void onDialogClickNegative(int tag, Object payload) {}
 
     @Override
-    public void onClickListItem(int tag, int index, Object payload) {
-    }
+    public void onDialogClickListItem(int tag, int index, Object payload) {}
 }

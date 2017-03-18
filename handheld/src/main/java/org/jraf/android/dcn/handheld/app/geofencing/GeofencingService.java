@@ -42,16 +42,16 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.TextAppearanceSpan;
 
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingEvent;
+
 import org.jraf.android.dcn.R;
 import org.jraf.android.dcn.common.wear.WearHelper;
 import org.jraf.android.dcn.handheld.Constants;
 import org.jraf.android.dcn.handheld.app.addressinfo.list.AddressInfoLoader;
 import org.jraf.android.dcn.handheld.model.addressinfo.AddressInfo;
-import org.jraf.android.util.log.wrapper.Log;
+import org.jraf.android.util.log.Log;
 import org.jraf.android.util.string.StringUtil;
-
-import com.google.android.gms.location.Geofence;
-import com.google.android.gms.location.GeofencingEvent;
 
 public class GeofencingService extends IntentService {
     public static final String ACTION_REFRESH_GEOFENCES = "ACTION_REFRESH_GEOFENCES";

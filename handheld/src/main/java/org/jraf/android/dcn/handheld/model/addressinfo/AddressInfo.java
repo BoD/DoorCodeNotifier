@@ -44,7 +44,7 @@ import android.support.annotation.WorkerThread;
 import android.text.TextUtils;
 
 import org.jraf.android.dcn.handheld.model.contactinfo.ContactInfo;
-import org.jraf.android.util.log.wrapper.Log;
+import org.jraf.android.util.log.Log;
 
 public class AddressInfo implements Parcelable {
     public static final String SEPARATOR = "\n--\n";
@@ -226,14 +226,24 @@ public class AddressInfo implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeParcelable(contactInfo, flags); dest.writeParcelable(uri, 0); dest.writeString(formattedAddress); dest.writeDouble(latitude);
-        dest.writeDouble(longitude); dest.writeList(codeList); dest.writeString(otherInfo);
+        dest.writeParcelable(contactInfo, flags);
+        dest.writeParcelable(uri, 0);
+        dest.writeString(formattedAddress);
+        dest.writeDouble(latitude);
+        dest.writeDouble(longitude);
+        dest.writeList(codeList);
+        dest.writeString(otherInfo);
     }
 
     private AddressInfo(Parcel in) {
-        contactInfo = in.readParcelable(ContactInfo.class.getClassLoader()); uri = in.readParcelable(Uri.class.getClassLoader());
-        formattedAddress = in.readString(); latitude = in.readDouble(); longitude = in.readDouble(); codeList = new ArrayList<>();
-        in.readList(codeList, String.class.getClassLoader()); otherInfo = in.readString();
+        contactInfo = in.readParcelable(ContactInfo.class.getClassLoader());
+        uri = in.readParcelable(Uri.class.getClassLoader());
+        formattedAddress = in.readString();
+        latitude = in.readDouble();
+        longitude = in.readDouble();
+        codeList = new ArrayList<>();
+        in.readList(codeList, String.class.getClassLoader());
+        otherInfo = in.readString();
     }
 
     public static final Creator<AddressInfo> CREATOR = new Creator<AddressInfo>() {

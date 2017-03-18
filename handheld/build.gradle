@@ -1,83 +1,118 @@
 apply plugin: 'com.android.application'
-apply plugin: 'io.fabric'
+if (buildProperties.enableFabric.toBoolean()) apply plugin: 'io.fabric'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '23.0.0'
+    compileSdkVersion versions.compileSdk
+    buildToolsVersion versions.buildTools
 
     defaultConfig {
         applicationId 'org.jraf.android.dcn'
         minSdkVersion 15
-        targetSdkVersion 23
+        targetSdkVersion versions.targetSdk
         versionCode buildNumber
-        versionName buildProperties['versionName']
-        resConfigs 'en', 'fr'
+        versionName buildProperties.versionName
 
-        buildConfigField 'String', 'GIT_SHA1', '"' + gitSha1() + '"'
-        buildConfigField 'String', 'BUILD_DATE', '"' + buildDate() + '"'
+        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
+
+        buildConfigField 'String', 'GIT_SHA1', "\"${gitSha1}\""
+        buildConfigField 'String', 'BUILD_DATE', "\"${buildDate}\""
         // For now we enable strict mode for all the configs
         buildConfigField 'boolean', 'STRICT_MODE', 'true'
+
+        resConfigs 'en', 'fr'
+
+        // Useful for api keys in the manifest (Maps, Crashlytics, ...)
+        manifestPlaceholders = buildProperties
+
+        // Setting this to false disables the png generation at buildtime
+        // (see http://android-developers.blogspot.fr/2016/02/android-support-library-232.html)
+        vectorDrawables.useSupportLibrary = true
     }
 
     signingConfigs {
         release {
-            storeFile file(buildProperties['key-store'])
-            storePassword buildProperties['key-store-password']
-            keyAlias buildProperties['key-alias']
-            keyPassword buildProperties['key-alias-password']
+            storeFile file(buildProperties.signingStoreFile)
+            storePassword buildProperties.signingStorePassword
+            keyAlias buildProperties.signingKeyAlias
+            keyPassword buildProperties.signingKeyPassword
         }
     }
 
     buildTypes {
+        debug {
+            buildConfigField 'boolean', 'CRASH_REPORT', 'false'
+        }
+
         release {
+            buildConfigField 'boolean', 'CRASH_REPORT', 'true'
+
             minifyEnabled true
-            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            shrinkResources true
             signingConfig signingConfigs.release
+        }
+    }
+
+    dataBinding {
+        enabled = true
+    }
+
+    lintOptions {
+        abortOnError true
+        textReport true
+        ignoreWarnings true
+    }
+}
+
+android.applicationVariants.all { variant ->
+    // Create new copy tasks, for release builds
+    if (variant.buildType.name == 'release') {
+        variant.outputs.each { output ->
+            def apkName = "${globalProjectName}-${project.name}-${android.defaultConfig.versionCode}-${variant.flavorName}-signed.apk"
+
+            // Copy the apk to the 'etc' folder
+            def copyApkToEtc = tasks.create("copy${variant.name.capitalize()}ApkToEtc", Copy)
+            copyApkToEtc.from(output.outputFile)
+            copyApkToEtc.into('../etc/apk')
+            copyApkToEtc.rename output.outputFile.name, apkName
+
+            // Copy the apk to the deploy folder
+            def copyApkToDeploy = tasks.create("copy${variant.name.capitalize()}ApkToDeploy", Copy)
+            copyApkToDeploy.from(output.outputFile)
+            copyApkToDeploy.into(buildProperties.deployFolder)
+            copyApkToDeploy.rename output.outputFile.name, apkName
+
+            // Make the copy tasks run after the assemble tasks of the variant
+            variant.assemble.finalizedBy(copyApkToEtc, copyApkToDeploy)
         }
     }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    wearApp project(':wearable')
-    compile 'com.android.support:appcompat-v7:23.0.0'
-    compile 'com.android.support:recyclerview-v7:23.0.0'
-    compile 'com.android.support:cardview-v7:23.0.0'
-    compile 'com.jakewharton:butterknife:7.0.1'
-    compile 'com.squareup.picasso:picasso:2.5.2'
-    compile 'com.google.android.gms:play-services-location:7.8.0'
-    compile('com.crashlytics.sdk.android:crashlytics:2.5.1@aar') { transitive = true; }
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.robolectric:robolectric:3.3.1'
+    testCompile 'org.easytesting:fest-assert-core:2.0M10'
+
+    // Support library
+    compile "com.android.support:appcompat-v7:$versions.supportLibrary"
+    compile "com.android.support:recyclerview-v7:$versions.supportLibrary"
+    compile "com.android.support:cardview-v7:$versions.supportLibrary"
+    compile "com.android.support:design:$versions.supportLibrary"
+
+
     compile project(':common')
-}
 
-task deploy(dependsOn: assembleRelease) << {
-    description 'Build a release apk, copy the result to the deploy and \'etc\' folders, then increment the build number.'
+    // Play Services
+    compile "com.google.android.gms:play-services-location:$versions.playServices"
 
-    // Copy the apk to the 'etc' folder
-    new File('etc/apk').mkdirs()
-    copy {
-        from buildDir.getPath() + "/outputs/apk/${project.name}-release.apk"
-        into '../etc/apk'
-        rename "${project.name}-release.apk", "${globalProjectName}-${android.defaultConfig.versionCode}-signed.apk"
-    }
+    // Fabric / Crashlytics
+    compile('com.crashlytics.sdk.android:crashlytics:2.6.7@aar') { transitive = true; }
 
-    // Also copy the apk to the deploy folder
-    copy {
-        from buildDir.getPath() + "/outputs/apk/${project.name}-release.apk"
-        into buildProperties['deploy-folder']
-        rename "${project.name}-release.apk", "${globalProjectName}-${android.defaultConfig.versionCode}-signed.apk"
-    }
+    compile 'com.jakewharton:butterknife:6.0.0'
+    compile 'com.squareup.picasso:picasso:2.5.2'
 
-    // Copy the proguard mapping to the 'etc' folder
-    new File('etc/proguard').mkdirs()
-    copy {
-        from buildDir.getPath() + '/outputs/mapping/release/mapping.txt'
-        into '../etc/proguard'
-        rename 'mapping.txt', "mapping-${android.defaultConfig.versionCode}.txt"
-    }
-
-    // Increment build number
-    buildNumberProperties['build.number'] = (buildNumber + 1).toString()
-    buildNumberProperties.store(buildNumberFile.newWriter(), null)
+    wearApp project(':wearable')
 }

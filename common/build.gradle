@@ -1,24 +1,32 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '23.0.0'
+    compileSdkVersion versions.compileSdk
+    buildToolsVersion versions.buildTools
 
     defaultConfig {
         minSdkVersion 15
-        targetSdkVersion 23
-        versionCode 1
-        versionName '1.0'
+        targetSdkVersion versions.targetSdk
+        versionCode buildNumber
+        versionName buildProperties.versionName
     }
+
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    dataBinding {
+        enabled = true
+    }
 }
 
 dependencies {
-    compile 'com.google.android.gms:play-services-wearable:7.8.0'
-    compile 'org.jraf:jraf-android-util:1.0.0'
+    // JRAF
+    compile 'com.github.BoD:jraf-android-util:-SNAPSHOT'
+
+    // Play Services
+    compile "com.google.android.gms:play-services-wearable:$versions.playServices"
 }

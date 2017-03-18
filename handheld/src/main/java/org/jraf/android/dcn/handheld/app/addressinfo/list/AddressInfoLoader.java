@@ -24,20 +24,24 @@
  */
 package org.jraf.android.dcn.handheld.app.addressinfo.list;
 
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import android.Manifest;
 import android.content.ContentUris;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.ContextCompat;
 
 import org.jraf.android.dcn.handheld.app.geofencing.GeofencingService;
 import org.jraf.android.dcn.handheld.model.addressinfo.AddressInfo;
-import org.jraf.android.util.log.wrapper.Log;
-
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
+import org.jraf.android.util.log.Log;
 
 public class AddressInfoLoader extends AsyncTaskLoader<List<AddressInfo>> {
     private List<AddressInfo> mData;
@@ -54,6 +58,13 @@ public class AddressInfoLoader extends AsyncTaskLoader<List<AddressInfo>> {
         List<AddressInfo> data = new ArrayList<>();
 
         if (mCursor != null && !mCursor.isClosed()) mCursor.close();
+
+        // Check for permissions first
+        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+            Log.w("Permission READ_CONTACTS not granted: return an empty list");
+            return Collections.EMPTY_LIST;
+        }
+
         mCursor = queryContactProvider(getContext());
         mCursor.registerContentObserver(mObserver);
         while (mCursor.moveToNext()) {

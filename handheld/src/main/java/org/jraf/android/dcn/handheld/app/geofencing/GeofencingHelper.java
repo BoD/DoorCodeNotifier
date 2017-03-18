@@ -31,13 +31,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.WorkerThread;
 
-import org.jraf.android.util.log.wrapper.Log;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.Geofence;
 import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationServices;
+
+import org.jraf.android.util.log.Log;
 
 /**
  * Helper singleton class to deal with the geofencing APIs.<br/>

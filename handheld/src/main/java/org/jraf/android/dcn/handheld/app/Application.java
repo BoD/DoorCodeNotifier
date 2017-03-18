@@ -29,11 +29,11 @@ import android.os.StrictMode;
 
 import com.crashlytics.android.Crashlytics;
 
+import io.fabric.sdk.android.Fabric;
+
 import org.jraf.android.dcn.BuildConfig;
 import org.jraf.android.dcn.handheld.Constants;
-import org.jraf.android.util.log.wrapper.Log;
-
-import io.fabric.sdk.android.Fabric;
+import org.jraf.android.util.log.Log;
 
 public class Application extends android.app.Application {
     @Override
@@ -41,7 +41,7 @@ public class Application extends android.app.Application {
         super.onCreate();
 
         // Log
-        Log.init(Constants.TAG);
+        Log.init(this, Constants.TAG);
 
         // Strict mode
         if (BuildConfig.STRICT_MODE) setupStrictMode();

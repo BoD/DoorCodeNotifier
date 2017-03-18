@@ -29,7 +29,7 @@ import android.os.Build;
 import android.provider.Settings;
 import android.text.TextUtils;
 
-import org.jraf.android.util.log.wrapper.Log;
+import org.jraf.android.util.log.Log;
 
 
 public class LocationUtil {

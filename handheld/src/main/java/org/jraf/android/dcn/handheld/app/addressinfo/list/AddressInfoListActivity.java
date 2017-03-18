@@ -26,6 +26,7 @@ package org.jraf.android.dcn.handheld.app.addressinfo.list;
 
 import java.util.ArrayList;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
@@ -43,9 +44,13 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.os.PersistableBundle;
 import android.preference.PreferenceManager;
 import android.provider.ContactsContract;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SwitchCompat;
@@ -60,6 +65,13 @@ import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+import butterknife.OnClick;
+
 import org.jraf.android.dcn.BuildConfig;
 import org.jraf.android.dcn.R;
 import org.jraf.android.dcn.handheld.Constants;
@@ -68,42 +80,44 @@ import org.jraf.android.dcn.handheld.app.geofencing.GeofencingService;
 import org.jraf.android.dcn.handheld.model.addressinfo.AddressInfo;
 import org.jraf.android.dcn.handheld.util.picasso.location.LocationUtil;
 import org.jraf.android.util.about.AboutActivityIntentBuilder;
+import org.jraf.android.util.app.permission.PermissionUtil;
 import org.jraf.android.util.async.Task;
 import org.jraf.android.util.async.TaskFragment;
 import org.jraf.android.util.dialog.AlertDialogFragment;
 import org.jraf.android.util.dialog.AlertDialogListener;
-import org.jraf.android.util.log.wrapper.Log;
+import org.jraf.android.util.log.Log;
 import org.jraf.android.util.string.StringUtil;
 import org.jraf.android.util.ui.UiUtil;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 
-import butterknife.Bind;
-import butterknife.ButterKnife;
-import butterknife.OnClick;
-
-
-public class AddressInfoListActivity extends AppCompatActivity implements AlertDialogListener, AddressInfoCallbacks {
+public class AddressInfoListActivity extends AppCompatActivity implements AlertDialogListener, AddressInfoCallbacks,
+        ActivityCompat.OnRequestPermissionsResultCallback {
     private static final int REQUEST_CONTACT_PICK = 0;
     private static final int REQUEST_INSTALL_PLAY_SERVICES = 1;
 
     private static final int DIALOG_CHOOSE_ADDRESS_TO_EDIT = 0;
     private static final int DIALOG_LOCATION_SETTINGS = 1;
 
-    @Bind(R.id.conFencingDisabled)
+    private static final int PERM_CONTACT = 0;
+    private static final int PERM_LOCATION = 1;
+
+    @InjectView(R.id.conRoot)
+    protected View mConRoot;
+
+    @InjectView(R.id.conFencingDisabled)
     protected View mConGeofencingDisabled;
 
-    @Bind(R.id.imgArrowUp)
+    @InjectView(R.id.imgArrowUp)
     protected View mImgArrowUp;
 
     private SwitchCompat mSwiGeofencing;
+    private boolean mHasRequestedContactPermissions;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.addressinfo_list);
-        ButterKnife.bind(this);
+        ButterKnife.inject(this);
 
         // Custom action bar that contains the "done" button for saving changes
         ActionBar actionBar = getSupportActionBar();
@@ -129,7 +143,8 @@ public class AddressInfoListActivity extends AppCompatActivity implements AlertD
                     if (enabled) {
                         mConGeofencingDisabled.setVisibility(View.GONE);
                     } else {
-                        alignUpArrow(); mConGeofencingDisabled.setVisibility(View.VISIBLE);
+                        alignUpArrow();
+                        mConGeofencingDisabled.setVisibility(View.VISIBLE);
                     }
                 }
 
@@ -141,23 +156,45 @@ public class AddressInfoListActivity extends AppCompatActivity implements AlertD
     }
 
     @Override
+    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
+        outState.putBoolean("mHasRequestedContactPermissions", mHasRequestedContactPermissions);
+        super.onSaveInstanceState(outState, outPersistentState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        mHasRequestedContactPermissions = savedInstanceState.getBoolean("mHasRequestedContactPermissions");
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
         // Check for Google Play Services
-        int res = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this); if (res != ConnectionResult.SUCCESS) {
+        int res = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
+        if (res != ConnectionResult.SUCCESS) {
             Dialog dialog = GooglePlayServicesUtil.getErrorDialog(res, this, REQUEST_INSTALL_PLAY_SERVICES, new DialogInterface.OnCancelListener() {
                 @Override
                 public void onCancel(DialogInterface dialog) {
                     finish();
                 }
-            }); dialog.show();
+            });
+            dialog.show();
+        }
+
+        // Check contact for permissions (only once per session)
+        if (!mHasRequestedContactPermissions) {
+            mHasRequestedContactPermissions = true;
+            PermissionUtil.requestMissingPermissions(this, PERM_CONTACT, Manifest.permission.READ_CONTACTS, Manifest.permission.WRITE_CONTACTS);
         }
 
         // Check for location settings
         if (!LocationUtil.isLocationEnabled(this)) {
-            AlertDialogFragment dialog = AlertDialogFragment.newInstance(DIALOG_LOCATION_SETTINGS);
-            dialog.setMessage(R.string.addressInfo_list_locationDialog_message); dialog.setPositiveButton(R.string.addressInfo_list_locationDialog_positive);
-            dialog.setNegativeButton(R.string.addressInfo_list_locationDialog_negative); dialog.show(getSupportFragmentManager());
+            AlertDialogFragment.newInstance(DIALOG_LOCATION_SETTINGS)
+                    .message(R.string.addressInfo_list_locationDialog_message)
+                    .positiveButton(R.string.addressInfo_list_locationDialog_positive)
+                    .negativeButton(R.string.addressInfo_list_locationDialog_negative)
+                    .show(this);
         }
     }
 
@@ -171,7 +208,9 @@ public class AddressInfoListActivity extends AppCompatActivity implements AlertD
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_about: onAboutClicked(); return true;
+            case R.id.action_about:
+                onAboutClicked();
+                return true;
 
             default:
                 return super.onOptionsItemSelected(item);
@@ -197,13 +236,19 @@ public class AddressInfoListActivity extends AppCompatActivity implements AlertD
     }
 
     private void onAboutClicked() {
-        AboutActivityIntentBuilder builder = new AboutActivityIntentBuilder(); builder.setAppName(getString(R.string.app_name));
-        builder.setBuildDate(BuildConfig.BUILD_DATE); builder.setGitSha1(BuildConfig.GIT_SHA1);
-        builder.setAuthorCopyright(getString(R.string.about_authorCopyright)); builder.setLicense(getString(R.string.about_License));
-        builder.setShareTextSubject(getString(R.string.about_shareText_subject)); builder.setShareTextBody(getString(R.string.about_shareText_body));
-        builder.setBackgroundResId(R.drawable.about_bg); builder.addLink(getString(R.string.about_email_uri), getString(R.string.about_email_text));
+        AboutActivityIntentBuilder builder = new AboutActivityIntentBuilder();
+        builder.setAppName(getString(R.string.app_name));
+        builder.setBuildDate(BuildConfig.BUILD_DATE);
+        builder.setGitSha1(BuildConfig.GIT_SHA1);
+        builder.setAuthorCopyright(getString(R.string.about_authorCopyright));
+        builder.setLicense(getString(R.string.about_License));
+        builder.setShareTextSubject(getString(R.string.about_shareText_subject));
+        builder.setShareTextBody(getString(R.string.about_shareText_body));
+        builder.setBackgroundResId(R.drawable.about_bg);
+        builder.addLink(getString(R.string.about_email_uri), getString(R.string.about_email_text));
         builder.addLink(getString(R.string.about_web_uri), getString(R.string.about_web_text));
-        builder.addLink(getString(R.string.about_sources_uri), getString(R.string.about_sources_text)); builder.setIsLightIcons(true);
+        builder.addLink(getString(R.string.about_sources_uri), getString(R.string.about_sources_text));
+        builder.setIsLightIcons(true);
         startActivity(builder.build(this));
     }
 
@@ -219,6 +264,31 @@ public class AddressInfoListActivity extends AppCompatActivity implements AlertD
 
             default:
                 super.onActivityResult(requestCode, resultCode, data);
+                break;
+        }
+    }
+
+
+    /*
+     * Permissions.
+     */
+
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERM_CONTACT:
+                if (!PermissionUtil.wasGranted(permissions, grantResults, Manifest.permission.READ_CONTACTS) ||
+                        !PermissionUtil.wasGranted(permissions, grantResults, Manifest.permission.WRITE_CONTACTS)) {
+                    Snackbar.make(mConRoot, R.string.addressInfo_list_permission_contacts, Snackbar.LENGTH_INDEFINITE).show();
+                }
+                break;
+
+            case PERM_LOCATION:
+                if (!PermissionUtil.wasGranted(permissions, grantResults, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    mSwiGeofencing.setChecked(false);
+                    Snackbar.make(mConRoot, R.string.addressInfo_list_permission_location, Snackbar.LENGTH_INDEFINITE).show();
+                } else {
+                    onGeofencingEnabled();
+                }
                 break;
         }
     }
@@ -249,7 +319,8 @@ public class AddressInfoListActivity extends AppCompatActivity implements AlertD
                 }
 
                 // 2/ Find addresses for this contact
-                ArrayList<StructuredPostal> structuredPostalList = new ArrayList<>(); projection = new String[] {ContactsContract.Data._ID, // 0
+                ArrayList<StructuredPostal> structuredPostalList = new ArrayList<>();
+                projection = new String[] {ContactsContract.Data._ID, // 0
                         ContactsContract.CommonDataKinds.StructuredPostal.FORMATTED_ADDRESS, // 1
                 };
                 String selection = ContactsContract.Contacts.Data.MIMETYPE + "=? AND " + ContactsContract.Data.CONTACT_ID + "=?";
@@ -356,14 +427,14 @@ public class AddressInfoListActivity extends AppCompatActivity implements AlertD
             startAddressInfoEditActivity((Uri) uris.get(0));
             return;
         }
+        payload.putParcelableArrayList("uris", uris);
 
         // Ask the user which address they want to edit
-        AlertDialogFragment dialogFragment = AlertDialogFragment.newInstance(DIALOG_CHOOSE_ADDRESS_TO_EDIT);
-        dialogFragment.setItems(items);
-        payload.putParcelableArrayList("uris", uris);
-        dialogFragment.setTitle(R.string.addressInfo_list_chooseAddress);
-        dialogFragment.setPayload(payload);
-        dialogFragment.show(getSupportFragmentManager());
+        AlertDialogFragment.newInstance(DIALOG_CHOOSE_ADDRESS_TO_EDIT)
+                .items(items)
+                .title(R.string.addressInfo_list_chooseAddress)
+                .payload(payload)
+                .show(this);
     }
 
 
@@ -373,17 +444,19 @@ public class AddressInfoListActivity extends AppCompatActivity implements AlertD
     //region
 
     @Override
-    public void onClickPositive(int tag, Object payload) {
+    public void onDialogClickPositive(int tag, Object payload) {
         switch (tag) {
-            case DIALOG_LOCATION_SETTINGS: startActivity(Intent.createChooser(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), null)); break;
+            case DIALOG_LOCATION_SETTINGS:
+                startActivity(Intent.createChooser(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), null));
+                break;
         }
     }
 
     @Override
-    public void onClickNegative(int tag, Object payload) {}
+    public void onDialogClickNegative(int tag, Object payload) {}
 
     @Override
-    public void onClickListItem(int tag, int index, Object payload) {
+    public void onDialogClickListItem(int tag, int index, Object payload) {
         switch (tag) {
             case DIALOG_CHOOSE_ADDRESS_TO_EDIT:
                 Bundle payloadBundle = (Bundle) payload;
@@ -413,9 +486,11 @@ public class AddressInfoListActivity extends AppCompatActivity implements AlertD
     @Override
     public void onListLoaded(boolean isEmpty) {
         // First disable any previously installed listener
-        mSwiGeofencing.setOnCheckedChangeListener(null); if (isEmpty) {
+        mSwiGeofencing.setOnCheckedChangeListener(null);
+        if (isEmpty) {
             // Empty list, do not bother enabling the geofencing switch
-            mSwiGeofencing.setEnabled(false); mSwiGeofencing.setChecked(false);
+            mSwiGeofencing.setEnabled(false);
+            mSwiGeofencing.setChecked(false);
         } else {
             // Enable the switch
             mSwiGeofencing.setEnabled(true);
@@ -443,41 +518,62 @@ public class AddressInfoListActivity extends AppCompatActivity implements AlertD
 
 
     private void onGeofencingCheckedChanged(boolean isChecked) {
-        SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
-        preferenceManager.edit().putBoolean(Constants.PREF_GEOFENCING_ENABLED, isChecked).commit();
         GeofencingService.refresh(this);
         if (isChecked) {
-            Toast.makeText(this, R.string.addressInfo_list_geofencingOn, Toast.LENGTH_SHORT).show();
-            mConGeofencingDisabled.animate().alpha(0f).setListener(new Animator.AnimatorListener() {
-                @Override
-                public void onAnimationStart(Animator animation) {}
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mConGeofencingDisabled.setVisibility(View.GONE);
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animation) {}
-
-                @Override
-                public void onAnimationRepeat(Animator animation) {}
-            });
+            if (!PermissionUtil.areAllGranted(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
+                PermissionUtil.requestMissingPermissions(this, PERM_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION);
+            } else {
+                onGeofencingEnabled();
+            }
         } else {
-            mConGeofencingDisabled.setAlpha(0f); mConGeofencingDisabled.setVisibility(View.VISIBLE); mConGeofencingDisabled.post(new Runnable() {
+            SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
+            preferenceManager.edit().putBoolean(Constants.PREF_GEOFENCING_ENABLED, false).apply();
+
+            mConGeofencingDisabled.setAlpha(0f);
+            mConGeofencingDisabled.setVisibility(View.VISIBLE);
+            mConGeofencingDisabled.post(new Runnable() {
                 @Override
                 public void run() {
-                    alignUpArrow(); mConGeofencingDisabled.animate().alpha(1f).setListener(null);
+                    alignUpArrow();
+                    mConGeofencingDisabled.animate().alpha(1f).setListener(null);
                 }
             });
         }
     }
 
-    private void alignUpArrow() {
-        Display display = getWindowManager().getDefaultDisplay(); Point size = new Point(); display.getSize(size); int displayWidth = size.x;
+    private void onGeofencingEnabled() {
+        SharedPreferences preferenceManager = PreferenceManager.getDefaultSharedPreferences(this);
 
-        Rect switchLocation = UiUtil.getLocationInWindow(mSwiGeofencing); Log.d("switchLocation=" + switchLocation);
-        int diff = displayWidth - switchLocation.right; LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) mImgArrowUp.getLayoutParams();
-        layoutParams.rightMargin = diff + mSwiGeofencing.getWidth() / 2 - mImgArrowUp.getWidth() / 2; mImgArrowUp.setLayoutParams(layoutParams);
+        preferenceManager.edit().putBoolean(Constants.PREF_GEOFENCING_ENABLED, true).apply();
+        Toast.makeText(this, R.string.addressInfo_list_geofencingOn, Toast.LENGTH_SHORT).show();
+        mConGeofencingDisabled.animate().alpha(0f).setListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {}
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                mConGeofencingDisabled.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {}
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {}
+        });
+    }
+
+    private void alignUpArrow() {
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int displayWidth = size.x;
+
+        Rect switchLocation = UiUtil.getLocationInWindow(mSwiGeofencing);
+        Log.d("switchLocation=" + switchLocation);
+        int diff = displayWidth - switchLocation.right;
+        LinearLayout.LayoutParams layoutParams = (LinearLayout.LayoutParams) mImgArrowUp.getLayoutParams();
+        layoutParams.rightMargin = diff + mSwiGeofencing.getWidth() / 2 - mImgArrowUp.getWidth() / 2;
+        mImgArrowUp.setLayoutParams(layoutParams);
     }
 }

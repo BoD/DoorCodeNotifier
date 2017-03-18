@@ -24,6 +24,8 @@
  */
 package org.jraf.android.dcn.handheld.app.wear;
 
+import java.io.UnsupportedEncodingException;
+
 import android.content.Intent;
 import android.net.Uri;
 
@@ -37,10 +39,8 @@ import com.google.android.gms.wearable.WearableListenerService;
 import org.jraf.android.dcn.R;
 import org.jraf.android.dcn.common.wear.WearHelper;
 import org.jraf.android.dcn.handheld.app.geofencing.GeofencingService;
-import org.jraf.android.util.log.wrapper.Log;
+import org.jraf.android.util.log.Log;
 import org.jraf.android.util.parcelable.ParcelableUtil;
-
-import java.io.UnsupportedEncodingException;
 
 public class NotificationWearableListenerService extends WearableListenerService {
     public NotificationWearableListenerService() {}
@@ -53,21 +53,33 @@ public class NotificationWearableListenerService extends WearableListenerService
 
     @Override
     public void onMessageReceived(MessageEvent messageEvent) {
-        Log.d(messageEvent.toString()); byte[] payload = messageEvent.getData(); switch (messageEvent.getPath()) {
-            case WearHelper.PATH_NOTIFICATION_ACTION_SHOW_CONTACT: Uri contactUri = ParcelableUtil.unparcel(payload, Uri.CREATOR); showContact(
-                    contactUri); break;
+        Log.d(messageEvent.toString());
+        byte[] payload = messageEvent.getData();
+        switch (messageEvent.getPath()) {
+            case WearHelper.PATH_NOTIFICATION_ACTION_SHOW_CONTACT:
+                Uri contactUri = ParcelableUtil.unparcel(payload, Uri.CREATOR);
+                showContact(contactUri);
+                break;
 
-            case WearHelper.PATH_NOTIFICATION_ACTION_CALL: String phoneNumber = null; try {
-                phoneNumber = new String(payload, "utf-8");
-            } catch (UnsupportedEncodingException ignored) {
-                // Can never happen
-            } call(phoneNumber); break;
+            case WearHelper.PATH_NOTIFICATION_ACTION_CALL:
+                String phoneNumber = null;
+                try {
+                    phoneNumber = new String(payload, "utf-8");
+                } catch (UnsupportedEncodingException ignored) {
+                    // Can never happen
+                }
+                call(phoneNumber);
+                break;
 
-            case WearHelper.PATH_NOTIFICATION_ACTION_SMS: phoneNumber = null; try {
-                phoneNumber = new String(payload, "utf-8");
-            } catch (UnsupportedEncodingException ignored) {
-                // Can never happen
-            } sms(phoneNumber); break;
+            case WearHelper.PATH_NOTIFICATION_ACTION_SMS:
+                phoneNumber = null;
+                try {
+                    phoneNumber = new String(payload, "utf-8");
+                } catch (UnsupportedEncodingException ignored) {
+                    // Can never happen
+                }
+                sms(phoneNumber);
+                break;
         }
     }
 
@@ -76,7 +88,11 @@ public class NotificationWearableListenerService extends WearableListenerService
         Log.d("count=" + dataEvents.getCount());
         // There should always be only one item, but we iterate to be safe
         for (DataEvent dataEvent : dataEvents) {
-            DataItem dataItem = dataEvent.getDataItem(); Uri uri = dataItem.getUri(); Log.d("uri=" + uri); String path = uri.getPath(); Log.d("path=" + path);
+            DataItem dataItem = dataEvent.getDataItem();
+            Uri uri = dataItem.getUri();
+            Log.d("uri=" + uri);
+            String path = uri.getPath();
+            Log.d("path=" + path);
             if (dataEvent.getType() == DataEvent.TYPE_DELETED) {
                 dismissNotification();
             }
@@ -87,20 +103,30 @@ public class NotificationWearableListenerService extends WearableListenerService
      * The Wear notification has been dismissed: dismiss the handheld one.
      */
     private void dismissNotification() {
-        Log.d(); Intent intent = new Intent(GeofencingService.ACTION_DISMISS_NOTIFICATION, null, this, GeofencingService.class); startService(intent);
+        Log.d();
+        Intent intent = new Intent(GeofencingService.ACTION_DISMISS_NOTIFICATION, null, this, GeofencingService.class);
+        startService(intent);
     }
 
     private void showContact(Uri contactUri) {
-        Intent intent = new Intent(Intent.ACTION_VIEW); intent.setData(contactUri); intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); startActivity(intent);
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(contactUri);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     private void call(String phoneNumber) {
-        Intent intent = new Intent(Intent.ACTION_DIAL); intent.setData(Uri.parse("tel:" + phoneNumber)); intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        Intent intent = new Intent(Intent.ACTION_DIAL);
+        intent.setData(Uri.parse("tel:" + phoneNumber));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
 
     private void sms(String phoneNumber) {
-        Intent intent = new Intent(Intent.ACTION_VIEW); intent.setData(Uri.parse("sms:" + phoneNumber));
-        intent.putExtra("sms_body", getString(R.string.notification_action_sms_body)); intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK); startActivity(intent);
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(Uri.parse("sms:" + phoneNumber));
+        intent.putExtra("sms_body", getString(R.string.notification_action_sms_body));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 }

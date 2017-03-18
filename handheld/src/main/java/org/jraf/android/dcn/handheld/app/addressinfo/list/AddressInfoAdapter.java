@@ -39,14 +39,14 @@ import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.squareup.picasso.Picasso;
+
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+
 import org.jraf.android.dcn.R;
 import org.jraf.android.dcn.handheld.model.addressinfo.AddressInfo;
 import org.jraf.android.dcn.handheld.util.picasso.RoundTransformation;
-
-import com.squareup.picasso.Picasso;
-
-import butterknife.Bind;
-import butterknife.ButterKnife;
 
 
 public class AddressInfoAdapter extends RecyclerView.Adapter<AddressInfoAdapter.ViewHolder> {
@@ -57,21 +57,21 @@ public class AddressInfoAdapter extends RecyclerView.Adapter<AddressInfoAdapter.
 
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        @Bind(R.id.txtContactDisplayName)
+        @InjectView(R.id.txtContactDisplayName)
         public TextView txtContactDisplayName;
 
-        @Bind(R.id.txtFormattedAddress)
+        @InjectView(R.id.txtFormattedAddress)
         public TextView txtFormattedAddress;
 
-        @Bind(R.id.imgPhoto)
+        @InjectView(R.id.imgPhoto)
         public ImageView imgPhoto;
 
-        @Bind(R.id.conFields)
+        @InjectView(R.id.conFields)
         public ViewGroup conFields;
 
         public ViewHolder(View v, Context context) {
             super(v);
-            ButterKnife.bind(this, v);
+            ButterKnife.inject(this, v);
 
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
                 // HACK!  Adding fades to state list, so it looks nicer than the theme default - only for pre lollipop

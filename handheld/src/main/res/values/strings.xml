@@ -47,6 +47,8 @@
     <string name="addressInfo_list_locationDialog_message">Location is currently disabled.\nWould you like to enable it?</string>
     <string name="addressInfo_list_locationDialog_positive">Yes</string>
     <string name="addressInfo_list_locationDialog_negative">Not now</string>
+    <string name="addressInfo_list_permission_contacts">Access to the contact list was denied</string>
+    <string name="addressInfo_list_permission_location">Access to the device location list was denied</string>
 
     <!-- Addressinfo edit -->
     <string name="addressInfo_edit_loadError">Could not load this address</string>
@@ -72,6 +74,5 @@
     <string name="about_sources_text" translatable="false">Source code on Github</string>
     <string name="about_shareText_subject">Checkout out this app!</string>
     <string name="about_shareText_body">This app notifies you when you\'re near a friend\'s place, to show you their door code.\nCheck it out here:\nhttp://play.google.com/store/apps/details?id=%s</string>
-
 
 </resources>

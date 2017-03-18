@@ -49,8 +49,8 @@ import com.google.android.gms.wearable.WearableListenerService;
 
 import org.jraf.android.dcn.R;
 import org.jraf.android.dcn.common.wear.WearHelper;
+import org.jraf.android.util.log.Log;
 import org.jraf.android.util.log.LogUtil;
-import org.jraf.android.util.log.wrapper.Log;
 import org.jraf.android.util.parcelable.ParcelableUtil;
 
 public class NotificationWearableListenerService extends WearableListenerService {

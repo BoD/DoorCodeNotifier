@@ -36,9 +36,6 @@ import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 
-import org.jraf.android.util.log.wrapper.Log;
-import org.jraf.android.util.parcelable.ParcelableUtil;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.wearable.Asset;
@@ -49,6 +46,9 @@ import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
+
+import org.jraf.android.util.log.Log;
+import org.jraf.android.util.parcelable.ParcelableUtil;
 
 /**
  * Helper singleton class to deal with the wear APIs.<br/>
@@ -113,7 +113,9 @@ public class WearHelper {
         PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(PATH_NOTIFICATION);
 
         DataMap dataMap = putDataMapRequest.getDataMap();
-        dataMap.putString(EXTRA_TITLE, title); dataMap.putString(EXTRA_TEXT_SHORT, textShort); dataMap.putString(EXTRA_TEXT_LONG, textLong);
+        dataMap.putString(EXTRA_TITLE, title);
+        dataMap.putString(EXTRA_TEXT_SHORT, textShort);
+        dataMap.putString(EXTRA_TEXT_LONG, textLong);
         if (photo != null) dataMap.putAsset(EXTRA_PHOTO, createAssetFromBitmap(photo));
         byte[] contactUriBytes = ParcelableUtil.parcel(contactUri);
         dataMap.putByteArray(EXTRA_CONTACT_URI, contactUriBytes);
@@ -146,7 +148,8 @@ public class WearHelper {
 
     @WorkerThread
     public void sendMessageShowContact(Uri uri) {
-        byte[] payload = ParcelableUtil.parcel(uri); sendMessage(PATH_NOTIFICATION_ACTION_SHOW_CONTACT, payload);
+        byte[] payload = ParcelableUtil.parcel(uri);
+        sendMessage(PATH_NOTIFICATION_ACTION_SHOW_CONTACT, payload);
     }
 
     @WorkerThread
@@ -177,7 +180,7 @@ public class WearHelper {
      */
 
     private static Uri createUri(String path) {
-        return new Uri.Builder().scheme("wear").path(path).build();
+        return new Uri.Builder().scheme(PutDataRequest.WEAR_URI_SCHEME).path(path).build();
     }
 
     private static Asset createAssetFromBitmap(Bitmap bitmap) {

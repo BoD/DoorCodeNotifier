@@ -37,18 +37,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+
 import org.jraf.android.dcn.R;
 import org.jraf.android.dcn.handheld.model.addressinfo.AddressInfo;
 import org.jraf.android.util.app.base.BaseFragment;
 
-import butterknife.Bind;
-import butterknife.ButterKnife;
-
 public class AddressInfoListFragment extends BaseFragment<AddressInfoCallbacks> implements LoaderManager.LoaderCallbacks<List<AddressInfo>> {
-    @Bind(R.id.rclList)
+    @InjectView(R.id.rclList)
     protected RecyclerView mRclList;
 
-    @Bind(R.id.txtEmpty)
+    @InjectView(R.id.txtEmpty)
     protected TextView mTxtEmpty;
 
     private AddressInfoAdapter mAdapter;
@@ -56,7 +56,7 @@ public class AddressInfoListFragment extends BaseFragment<AddressInfoCallbacks> 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View res = inflater.inflate(R.layout.addressinfo_list_list, container, false);
-        ButterKnife.bind(this, res);
+        ButterKnife.inject(this, res);
         mRclList.setHasFixedSize(true);
         mRclList.setLayoutManager(new LinearLayoutManager(getActivity()));
 
@@ -68,7 +68,7 @@ public class AddressInfoListFragment extends BaseFragment<AddressInfoCallbacks> 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getLoaderManager().initLoader(0,null, this);
+        getLoaderManager().initLoader(0, null, this);
     }
 
     @Override
@@ -79,11 +79,13 @@ public class AddressInfoListFragment extends BaseFragment<AddressInfoCallbacks> 
     @Override
     public void onLoadFinished(Loader<List<AddressInfo>> loader, List<AddressInfo> data) {
         if (mAdapter == null) {
-            mAdapter=new AddressInfoAdapter(getActivity(), getCallbacks());
+            mAdapter = new AddressInfoAdapter(getActivity(), getCallbacks());
             mRclList.setAdapter(mAdapter);
         } else {
             mAdapter.clear();
-        } boolean empty = data.isEmpty(); if (empty) {
+        }
+        boolean empty = data.isEmpty();
+        if (empty) {
             mTxtEmpty.setVisibility(View.VISIBLE);
         } else {
             mTxtEmpty.setVisibility(View.GONE);
